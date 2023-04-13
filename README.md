@@ -7,7 +7,7 @@ To do this, this pipeline trains a regression model with dilution-growth experim
 
 
 ### Datasets
-In our case, our abundance data comes from [neutral mechanistic simulations of growth-dilution experiments](https://github.com/silvtal/simuls/), so each iteration is an "instance" of a community type.
+In our case, our abundance data comes from [neutral mechanistic simulations of growth-dilution experiments](https://github.com/silvtal/dilgrowth/), so each iteration is an "instance" of a community type.
 
 These neutral simulations are generated from two datasets:
 
@@ -22,8 +22,6 @@ The wrappers we used for running these simulations in batch for both datasets ar
 
 ### Main processing script[s]
 For predicting fixation for new datasets, we need matrices containing the features or independent variables X (e.g. information about the initial community composition, before any dilution-growth experiment takes place, plus the dilution factor used in the simulated experiment) and the target information or dependent variable y (e.g. the number of transfers needed to reach successful fixation).
-
-**These matrices are the result of simulating the communities / abundance tables in `/1_datasets` with the simulation package available [here](https://github.com/silvtal/dilgrowth).**
 
 The main script here is `create_data.R`, which generates a table from the raw neutral simulations data. This script is designed for the multi-PCGs rhizosphere dataset and depends on the functions defined on `simul_fixation_functions.R`.
 
