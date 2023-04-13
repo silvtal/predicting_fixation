@@ -1,11 +1,9 @@
 ## predicting_fixation
 
 ### Summary
-[TODO]: <> (explain what "dilution-growth" means !!)
 The objective of this pipeline is to predict fixation of OTUs in a given community type or types from its **compositional data**. We establish successful fixation is reached when **only one OTU is present** in **each phylogenetic core group** (PCG) in **50%** of the instances of that community.
 
 To do this, this pipeline trains a regression model with dilution-growth experiment datasets. Once trained, the model is capable of predicting **how many transfers are needed** for fixation to occur in a new, dataset given information about its **composition** and **PCGs**. 
-[TODO]: <> (maybe fix this explanation ^^^)
 
 
 ### Datasets
@@ -17,22 +15,19 @@ These neutral simulations are generated from two datasets:
 
 These samples were submitted to an actual dilution-growth experiment, but it's important to note that our training data here does not take the actual fixation values but those generated with our mechanistic simulation model.
 
-2. From artificial communities ("simcomms"). The initial abundance tables for this dataset don't come from 16S sequencing, but have instead been artificially generated.
-[TODO]: <> (donde !! donde guardo naive_simuls.R)
+2. From artificial communities ("simcomms"). The initial abundance tables for this dataset don't come from 16S sequencing, but have instead been artificially generated. There's also a set of simulated "PCG tables" that allow for artificial functional groups to be simulated. 
 
 The wrappers we used for running these simulations in batch for both datasets are in the `simulation_wrappers` folder.
 
 
 ### Main processing script[s]
-For predicting fixation for new datasets, we need tables containing the features or independent variables X (e.g. information about the initial community composition, before any dilution-growth experiment takes place, plus the dilution factor used in the simulated experiment) and the target information or dependent variable y (e.g. the number of transfers needed to reach successful fixation).
+For predicting fixation for new datasets, we need matrices containing the features or independent variables X (e.g. information about the initial community composition, before any dilution-growth experiment takes place, plus the dilution factor used in the simulated experiment) and the target information or dependent variable y (e.g. the number of transfers needed to reach successful fixation).
 
-The main script is `create_data.R`, which generates a table from the raw neutral simulations data. This script is designed for the multi-PCGs rhizosphere dataset and depends on the functions defined on `simul_fixation_functions.R`.
+**These matrices are the result of simulating the communities / abundance tables in `/1_datasets` with the simulation package available [here](https://github.com/silvtal/dilgrowth).**
+
+The main script here is `create_data.R`, which generates a table from the raw neutral simulations data. This script is designed for the multi-PCGs rhizosphere dataset and depends on the functions defined on `simul_fixation_functions.R`.
 
 `create_data_simcomms.R` is a modification of this script tailored for the computationally generated communities. It depends on some of the functions defined on `simul_fixation_functions.R` but it also has some modifications to adapt for the specific input format of this dataset plus the fact that it doesn't have multiple PCGs.
-
-[TODO]: <> ("fulanito" puts together all tables)
-[TODO]: <> (IMPORTANTE: explicar el input de mis modelos de .R, una cosa es el de rhizosphere y otra el de simcomms...)
-
 
 ### Regression model script
 [TODO]: <> (explain this ig)
