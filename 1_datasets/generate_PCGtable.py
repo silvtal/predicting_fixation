@@ -71,7 +71,7 @@ def generate_PCGtable(N, Av, L=None, LN=None, outfile=None):
         LN = sum(L)
 
     # Create list of leaves
-    leaves = [f"Leaf{i}" for i in range(1, LN+1)]
+    leaves = [f"otu{i}" for i in range(1, LN+1)]
 
     # Create table
     table = []
