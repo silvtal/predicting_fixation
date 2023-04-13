@@ -19,11 +19,13 @@ So, for every combination of number of total species LN and number of groups N, 
 |-- EvenGroups_lognorm_N<N>_LN.csv
 |-- SkewedGroups_lognorm_N<N>_LN.csv
 
-Simulations:
+Simulations (the next step):
     Each community (abundance table; see "simcomms" folder) will be paired with those PCG tables with the same number of
     species. This means multiple PCG tables per community. Each community will then be simulated with a varying number of
     groups + with a varying species distribution between groups (Skewed of Even)
     [We could also drop lognorm and use uniform communities only, or remake the lognorm ones; see Limitations]
+    Each pairing will be simulated with many different dilution factors.
+    Also, each abundance table actually contains 30 replicates, so everything will be simulated x30.
 
 Limitations:
  - Leaves are randomly and evenly distributed between groups without checking their previous total abundance. If we have
@@ -99,5 +101,5 @@ for LN in LN_values:
                 av_type = 'SkewedGroups'
                 
             # Loop over community files
-            outfile = f'{av_type}_N{N}_{LN}sp'
+            outfile = f'{av_type}_N{N}_{LN}sp.csv'
             generate_PCGtable(N, Av, LN=LN, outfile=output_folder + '/' + outfile)
