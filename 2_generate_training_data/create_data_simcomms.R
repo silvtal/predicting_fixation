@@ -163,7 +163,9 @@ metadata <- metadata[metadata$transfer==0,]
 ## !! -- important to assign each fixation value to its corresponding core !
 message("Computing diversity measures..")
 metadata$reached_fixation_at <- NA
-metadata$group_success <- NA 
+if (!is.null(pcgtable)) {
+  metadata$group_success <- NA 
+}
 metadata$success <- NA 
 metadata$final_size <- NA
 metadata$initial_size <- NA
@@ -193,8 +195,10 @@ for (sa in unique(names(all_processed_data))) {
              metadata$dilfactor==df,]$initial_size <- initab
     
     # group_success
-    metadata[metadata$sample==sa & 
-             metadata$dilfactor==df,]$group_success <- successes %>% paste(collapse = ",")
+    if (!is.null(pcgtable)) {
+      metadata[metadata$sample==sa & 
+               metadata$dilfactor==df,]$group_success <- successes %>% paste(collapse = ";")
+    }
     # success ==> if there are multiple groups, it happens when all the groups
     #             reach fixation (in percN of simulations)
     metadata[metadata$sample==sa & 
