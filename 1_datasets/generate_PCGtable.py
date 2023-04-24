@@ -77,9 +77,9 @@ def generate_PCGtable(N, Av, L=None, LN=None, outfile=None):
     table = []
     for i in range(N):
         # Select leaves for this row
-        row_leaves = random.sample(leaves, L[i])
-        for leaf in row_leaves:
-            leaves.remove(leaf)
+        row_leaves = random.sample(leaves, L[i]) # if we randomly pick from a 
+        for leaf in row_leaves:                  # lognorm, we expect the groups
+            leaves.remove(leaf)                  # to have a lognorm distrb too
         # Append row to table
         row = ["group" + str(i+1), Av[i], ";".join(row_leaves)]
         table.append(row)

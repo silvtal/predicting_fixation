@@ -21,19 +21,14 @@ The wrappers we used for running these simulations in batch for both datasets ar
 
 
 ### Main processing script[s]
-For predicting fixation for new datasets, we need matrices containing the features or independent variables X (e.g. information about the initial community composition, before any dilution-growth experiment takes place, plus the dilution factor used in the simulated experiment) and the target information or dependent variable y (e.g. the number of transfers needed to reach successful fixation).
+For predicting fixation for new datasets, we need matrices containing the features or independent variables X (e.g. information about the initial community composition, before any dilution-growth experiment takes place, plus the dilution factor used in the simulated experiment) and the target information or dependent variable y (e.g. the number of transfers needed to reach successful fixation). This target information comes from running [simulations](https://github.com/silvtal/dilgrowth) (see `2_generating_training_data`).
 
-The main script here is `create_data.R`, which generates a table from the raw neutral simulations data. This script is designed for the multi-PCGs rhizosphere dataset and depends on the functions defined on `simul_fixation_functions.R`.
+The `create_data` scripts generate tables from the raw neutral simulations results, one per sample.
 
-`create_data_simcomms.R` is a modification of this script tailored for the computationally generated communities. It depends on some of the functions defined on `simul_fixation_functions.R` but it also has some modifications to adapt for the specific input format of this dataset plus the fact that it doesn't have multiple PCGs.
+`create_data_simcomms.R` is designed for the multi-PCGs rhizosphere dataset and depends on the functions defined on `simul_fixation_functions.R`.
+
+`create_data_simcomms.R` is a modification of this script tailored for the computationally generated communities. It depends on some of the functions defined on `simul_fixation_functions.R` but it also has some modifications to adapt for the specific input format of this dataset plus the fact that it doesn't have multiple PCGs. **This script is suitable for many community types**, with an option to include to include multiple functional groups separately or not**.
 
 ### Regression model script
-[TODO]: <> (explain this ig)
 
-[TODO]: <> (importante leer mis notas de Calendario y tal)
-[TODO]: <> (ordenar modelos .R pero eso ya cuando se los haya aplicado a simcomms)
-/home/silvia/AAA/2022-11-10_OTU_fixation/models_for_predicting_OTU_fixation/MODEL 3 -- curve fitting.R
-/home/silvia/AAA/2022-11-10_OTU_fixation/models_for_predicting_OTU_fixation/MODEL 3 -- plot_functions.R
-/home/silvia/AAA/2022-11-10_OTU_fixation/models_for_predicting_OTU_fixation/MODEL 4 -- curve fitting.R
-/home/silvia/AAA/2022-11-10_OTU_fixation/models_for_predicting_OTU_fixation/MODEL 4 - multiplot any X.R
-
+WIP
