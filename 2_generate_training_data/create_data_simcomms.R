@@ -19,7 +19,7 @@
 ################################################################################
 
 ### This script was tailored to the simcomm data, but it's actually suitable for
-### other community types (unline the rhizosohere script)
+### other community types (unlike the rhizosohere script)
 
 ################################################################################
 
@@ -36,6 +36,7 @@ parser <- OptionParser(option_list = list(
   make_option(c("-i", "--input"), type="character", default=NULL),
   make_option(c("-n", "--numsamples"), type="integer", default=NULL),
   make_option(c("-p", "--pcgtable"), type="character", default=NULL),
+  make_option(c("-c", "--cores"), type="integer", default=NULL),
   make_option(c("-s", "--successperc"), type="double", default=0.95,
               help = "Used to define 'success' within a transfer for a sample. Success is considered to have happened when fixation is reached at percN*100% of simulations for that sample and transfer.")
 )
@@ -46,17 +47,17 @@ parser <- OptionParser(option_list = list(
 # threshold, the portion of simulations to be checked for fixation, and the
 # number of cores to be used. It also defines the output folder and the output
 # name based on the input directory and the fixation threshold.
-cores <- 16
 fixation_threshold <- 0.5
 
 ## input
+cores <- opt$cores
 simuls_folder  <- opt$input
 num_of_samples <- opt$numsamples
 pcgtable       <- opt$pcgtable
 percN          <- opt$successperc # portion of simulations we're going to check
-                                  # for fixation; if percN*100% of simulations 
+                                  # for fixation; if percN*100% of simulations
                                   # from one sample have reached fixation at
-                                  # transfer T, we define success at transfer T. 
+                                  # transfer T, we define success at transfer T.
 
 ## output
 output_folder <- paste0("processed_data_simcomms_", fixation_threshold)
@@ -81,7 +82,7 @@ read_simul_data <- function(simuls_folder, num_of_samples) {
                                          full.names = TRUE)
                    )
   }
-  
+
   simul_data <- mapply(filenames, FUN=function(full_name) {
     last_dir <- tail(strsplit(dirname(full_name), "/")[[1]], 1)
     name  <- paste(last_dir, basename(full_name), sep = "/")
@@ -134,6 +135,7 @@ if (!is.null(pcgtable)) {
   pcg_info <- fread(pcgtable)
   pcg_info <- pcg_info[1:(nrow(pcg_info)-1), ]
 } else {
+  pcg_info <- NULL
   message("No PCG table")
 }
 
@@ -144,6 +146,7 @@ metadata$size <- as.numeric(metadata$size)
 
 message("Creating 'processed_data'...")
 all_processed_data <- list() # for plots [4] onwards
+
 for (sa in unique(metadata$sample)) {
   # "all_processed_data":  fixated + perc + size
   all_processed_data[[sa]] <- create_processed_data(metadata[metadata$sample==sa,],
@@ -164,9 +167,9 @@ metadata <- metadata[metadata$transfer==0,]
 message("Computing diversity measures..")
 metadata$reached_fixation_at <- NA
 if (!is.null(pcgtable)) {
-  metadata$group_success <- NA 
+  metadata$group_success <- NA
 }
-metadata$success <- NA 
+metadata$success <- NA
 metadata$final_size <- NA
 metadata$initial_size <- NA
 
@@ -185,25 +188,25 @@ for (sa in unique(names(all_processed_data))) {
                                                                                  "size",
                                                                                  "filename")]
     successes <- record_success(selec, percN, groups=!is.null(pcgtable))
-    
+
     # final_size
-    metadata[metadata$sample==sa & 
+    metadata[metadata$sample==sa &
              metadata$dilfactor==df,]$final_size <- selec[selec$transfer==1,]$size
     # initial_size
     initab <- selec[selec$transfer==0,]$size
-    metadata[metadata$sample==sa & 
+    metadata[metadata$sample==sa &
              metadata$dilfactor==df,]$initial_size <- initab
-    
+
     # group_success
     if (!is.null(pcgtable)) {
-      metadata[metadata$sample==sa & 
+      metadata[metadata$sample==sa &
                metadata$dilfactor==df,]$group_success <- successes %>% paste(collapse = ";")
     }
     # success ==> if there are multiple groups, it happens when all the groups
     #             reach fixation (in percN of simulations)
-    metadata[metadata$sample==sa & 
-             metadata$dilfactor==df,]$success <- max(successes)    
-    
+    metadata[metadata$sample==sa &
+             metadata$dilfactor==df,]$success <- max(successes)
+
     # absolute abundances (initial)
     abs_ab <- data.table::fread(selec[selec$transfer==0,]$filename[[1]],
                                 header = T,
@@ -212,7 +215,7 @@ for (sa in unique(names(all_processed_data))) {
     rel_ab <- abs_ab/initab
     filt   <- abs_ab[rel_ab>=df] # filter: discard those OTUs that are going to
                                  # get diluted out by that dilution factor
-    
+
     # filtro: que tras diluir queden al menos 10 bichos de ese otu
     # filt <- filt[filt>10]
     if (!!length(filt)) {
@@ -226,6 +229,7 @@ for (sa in unique(names(all_processed_data))) {
     }
   }
 }
+
 
 message("saving...") # DEBUG
 write.csv(x = metadata %>% apply(.,2,as.character), file = paste0(output_folder, "/", output_name, ".csv"), row.names = F)

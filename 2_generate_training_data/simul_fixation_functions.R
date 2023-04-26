@@ -42,7 +42,7 @@ create_processed_data <- function (metadata, fixation_threshold,
   ###---------------------------------------------------------------------------
   ## it's important to sort the dataset by transfer, if it's not sorted already
   processed_metadata <- metadata[order(as.numeric(metadata$transfer)),]
-  
+
   ## Read each sample/replicate X otu table
   ## Rows: OTUs; Columns: samples
   tmp <- mclapply(processed_metadata$filename,
@@ -54,7 +54,7 @@ create_processed_data <- function (metadata, fixation_threshold,
                     return(t)
                   }, mc.cores = cores
   )
-  
+
   ## [$table]
   ## We're only going to save a small abundance table (initial abundances)
   processed_metadata$table <- mclapply(processed_metadata$filename,
@@ -65,11 +65,11 @@ create_processed_data <- function (metadata, fixation_threshold,
                                          return(abuntable)
                                        }, mc.cores = cores
   )
-  
+
   ## If there's a PCG table,
   ## - we add extra variable $group_sizes
   ## - $fixated and $perc will be a vector of values
-  
+
   if (!is.null(pcg_info)) {
     ## [$group_sizes]
     processed_metadata$group_sizes <- mclapply(tmp, function(t) {
@@ -95,13 +95,13 @@ create_processed_data <- function (metadata, fixation_threshold,
       ## For each tmp data.frame we'll return a string of comma-separated values.
       ## Each value indicates if fixation has been reached by each group in that
       ## sample and transfer.
-      
+
       ## First we normalize the abundances
       t <- tmp[[i]]
       t <- t/colSums(t)
       t[is.na(t)] <- fixation_threshold
-      
-      group_df <- 
+
+      group_df <-
         mclapply(pcg_info$Core, FUN=function(g) {
           ## For each group, take note of its OTUs
           otus <- unlist(
@@ -111,11 +111,11 @@ create_processed_data <- function (metadata, fixation_threshold,
           apply(t[otus, ], 2, function(x) any(x >= fixation_threshold))
         }, mc.cores = 1
         ) %>% do.call(cbind, .)
-      
+
       return(group_df %>% apply(., MARGIN = 1, function(x) x) %>% as_tibble() %>% transpose())
       }, mc.cores = cores
     )
-    
+
     ## [$perc]
     ## % of simulations that reached the fixation goal at that transfer
     ## i.e., how many communities surpass fixation_threshold
@@ -129,8 +129,8 @@ create_processed_data <- function (metadata, fixation_threshold,
                                           )
                                         }, mc.cores = cores
     )
-    
-  ## if no PCG table (no groups), $fixated and $perc will be a single value  
+
+  ## if no PCG table (no groups), $fixated and $perc will be a single value
   } else {
     ## [$fixated]
     processed_metadata$fixated <- mclapply(tmp,
@@ -139,7 +139,7 @@ create_processed_data <- function (metadata, fixation_threshold,
                                            t[is.na(t)] <- fixation_threshold
                                            apply(t, 2, function(x) any(x >= fixation_threshold))
                                            }, mc.cores = cores
-    ) 
+    )
     ## [$perc]
     processed_metadata$perc <- mclapply(processed_metadata$fixated,
                                         FUN=function(t){
@@ -198,7 +198,7 @@ get_diffs_and_fixpoints <- function(sample_info, reached_fix) {
   diffs <- c()
   all_fixation_points <- c()
   names_all_points <- c()
-  
+
   for (sa in names(sample_info)) {
     corenames <- reached_fix[[sa]] %>% names
     for (core in corenames) { # in the case there are multiple columns (like when
@@ -212,9 +212,9 @@ get_diffs_and_fixpoints <- function(sample_info, reached_fix) {
     }
     all_fixation_points <- c(all_fixation_points, reached_fix[[sa]])
   }; names(all_fixation_points) <- names_all_points
-  
+
   return(list(diffs, all_fixation_points))
-}  
+}
 
 
 get_diffs_and_fixpoints_all_dils <- function(sample_info, reached_fix) {
@@ -227,7 +227,7 @@ get_diffs_and_fixpoints_all_dils <- function(sample_info, reached_fix) {
   diffs <- c()
   all_fixation_points <- c()
   names_all_points <- c()
-  
+
   for (sa in names(sample_info)) {
     for (c in 1:length(reached_fix[[sa]])) { # !!
       corenames <- reached_fix[[sa]][[c]] %>% names # !!
@@ -242,7 +242,7 @@ get_diffs_and_fixpoints_all_dils <- function(sample_info, reached_fix) {
       }
       all_fixation_points <- c(all_fixation_points, reached_fix[[sa]][[c]]) # !!
     }; names(all_fixation_points) <- names_all_points
-    
+
     return(list(diffs, all_fixation_points))
   }
 }
@@ -277,7 +277,7 @@ plot_fixation_v_transferN <- function(processed_data, sa, percN,
     ylim(0, 1) + theme(plot.title = element_text(hjust = 0.5),
                        plot.subtitle = element_text(hjust = 0.5))
   if (!is.null(scale)) {
-    b <- b + scale_color_manual(values=scale)        
+    b <- b + scale_color_manual(values=scale)
   }
   return(b)
 }
@@ -299,9 +299,9 @@ plot_fixation_perc_v_transferN <- function(processed_data, sa, percN,
     xlab("Transfer") + ylab("Perc simuls which reached fixation") +
     ylim(0, 1) + theme(plot.title = element_text(hjust = 0.5),
                        plot.subtitle = element_text(hjust = 0.5))
-  
+
   if (!is.null(scale)) {
-    b <- b + scale_color_manual(values=scale)        
+    b <- b + scale_color_manual(values=scale)
   }
   return(b)
 }
@@ -321,9 +321,9 @@ plot_abundiff_v_fixationpoint <- function(diffs, all_fixation_points,
     xlab("Abundance gap between top 2 OTUs") +
     ylab("Perc simuls which reached fixation") +
     labs(color="Core")
-  
+
   if (!is.null(scale)) {
-    d <- d + scale_color_manual(values=scale)        
+    d <- d + scale_color_manual(values=scale)
   }
   return(d)
 }
@@ -342,9 +342,9 @@ plot_dilfact_v_fixation <- function(dflist, fixation_points,
     ylab(paste0("Transfer where ",fixation_threshold, " fixation is reached (--> faster fixation)")) +
     labs(color="Core") +
     scale_x_continuous(trans=reverselog_trans(10), labels = function(x) sprintf("%.5f", x))
-  
+
   if (!is.null(scale)) {
-    e <- e + scale_color_manual(values=scale)        
+    e <- e + scale_color_manual(values=scale)
   }
   return(e)
 }
@@ -366,10 +366,10 @@ plot_initabund_v_fixation <- function(initabund, fix_points,
     ggtitle(paste0(title, " - Effect of initial abundance on objective completion")) +
     xlab("Initial abundance") +
     ylab(paste0("% simuls with ", ytitle, " fixation (--> faster fixation)")) +
-    labs(color="Core") 
-  
+    labs(color="Core")
+
   if (!is.null(scale)) {
-    g <- g + scale_color_manual(values=scale)        
+    g <- g + scale_color_manual(values=scale)
   }
   return(g)
 }
@@ -387,9 +387,9 @@ plot_fixation_vs_evenness <- function(evenness, fix_points,
     ylab(paste0("Transfer where ", ytitle, " fixation is reached (--> faster fixation)")) +
     labs(color="Core") +
     scale_x_continuous(labels = function(x) sprintf("%.5f", x))
-  
+
   if (!is.null(scale)) {
-    h <- h + scale_color_manual(values=scale)        
+    h <- h + scale_color_manual(values=scale)
   }
   return(h)
 }
