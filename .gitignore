@@ -1,2 +1,4 @@
 /1_datasets/__pycache__
-/3_train_regression_model
+/3_analysis/plots_R
+/3_analysis/regression_model.R
+/3_analysis/.Rhistory
