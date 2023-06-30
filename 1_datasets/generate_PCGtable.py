@@ -5,7 +5,7 @@ def generate_PCGtable(N, Av, L=None, LN=None, outfile=None):
 
     Args:
         N (int): Number of groups.
-        Av (list of floats): List of average values for each group. The length
+        Av (list of floats): List of niche sizes (size for each group). The length
             of the list must be equal to N, and the values must sum to 1.
         L (list of ints, optional): List of number of leaves for each group. If this
             argument is provided, it takes precedence over the L argument. Default value

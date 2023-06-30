@@ -5,19 +5,10 @@ values.
 
 Generated files are as follows:
     For each LN in LN_values (number of species; 10, 100 or 1000):
-          |
           |-- For each N in N_values[LN] (number of groups; different for each value of LN):
-          |        |
-          |        |-- For each distribution of species between groups (Skewed or Even):
-          |        |         |
-          |        |         |-- For each community file (relative abundance distribution; lognorm or uniform):
-          |        |                 |-- <species_distr>_<comm_distr>_N<N>_LN.csv
 
 So, for every combination of number of total species LN and number of groups N, we will have files like :
-|-- EvenGroups_uniform_N<N>_LN.csv
-|-- SkewedGroups_uniform_N<N>_LN.csv
-|-- EvenGroups_lognorm_N<N>_LN.csv
-|-- SkewedGroups_lognorm_N<N>_LN.csv
+|-- N<N>_LN.csv
 
 Simulations (the next step):
     Each community (abundance table; see "simcomms" folder) will be paired with those PCG tables with the same number of
@@ -65,7 +56,7 @@ import random
 import csv
 
 # Set working directory
-os.chdir('/home/silvia/AAA/2023-02-01_initial_community_simulation')
+# os.chdir('/home/silvia/repos/predicting_fixation')
 
 # Import main function
 from generate_PCGtable import generate_PCGtable
@@ -73,10 +64,18 @@ from generate_PCGtable import generate_PCGtable
 # Set input variables
 LN_values = [10, 100, 1000]
 N_values = {
-    10: [2, 3],
-    100: [2, 3, 5, 10, 25],
-    1000: [2, 3, 5, 10, 25, 50, 100]
+    10: [3],
+    100: [3, 10],
+    1000: [3, 10, 30]
 }
+Av_values = { 
+    3: [0.404, 0.221, 0.375],
+    10: [0.194, 0.048, 0.071, 0.056, 0.095, 0.052, 0.168, 0.135, 0.080, 0.102],
+    30: [0.036, 0.031, 0.016, 0.009, 0.107, 0.028, 0.027, 0.027, 0.006, 0.036, 0.014, 0.025, 0.045, 0.022, 0.037, 0.034, 0.098, 0.052, 0.016, 0.019, 0.027, 0.062, 0.015, 0.007, 0.117, 0.015, 0.009, 0.043, 0.009, 0.010]
+} # because I want niche sizes to be consistent; these are the "Skewed" type
+
+av_type = ''
+
 output_folder = 'PCGtables'
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
@@ -84,22 +83,22 @@ if not os.path.exists(output_folder):
 # Start loop
 for LN in LN_values:
     for N in N_values[LN]:
-        # Generate random Av values
-        for distr in ['uniform', 'lognorm']:
-        
-            if distr == "uniform":
-                Av = [random.uniform(0, 1) for _ in range(N)]
-                total = sum(Av)
-                Av = [v/total for v in Av]
-                av_type = 'EvenGroups'
-            else:
-                mu = random.uniform(-2, 2)
-                sigma = random.uniform(0.1, 1)
-                Av = list(random.lognormvariate(mu, sigma) for _ in range(N))
-                total = sum(Av)
-                Av = [v/total for v in Av]
-                av_type = 'SkewedGroups'
+        Av = Av_values[N]
+        # In case we wanted to generate random Av values, both uniformly and log-normally:
+        # for distr in ['uniform', 'lognorm']:        
+        #   if distr == "uniform":
+        #       Av = [random.uniform(0, 1) for _ in range(N)]
+        #       total = sum(Av)
+        #       Av = [v/total for v in Av]
+        #       av_type = 'EvenGroups'
+        #   else:
+        #       mu = random.uniform(-2, 2)
+        #       sigma = random.uniform(0.1, 1)
+        #       Av = list(random.lognormvariate(mu, sigma) for _ in range(N))
+        #       total = sum(Av)
+        #       Av = [v/total for v in Av]
+        #       av_type = 'SkewedGroups'
                 
-            # Loop over community files
-            outfile = f'{av_type}_N{N}_{LN}sp.csv'
-            generate_PCGtable(N, Av, LN=LN, outfile=output_folder + '/' + outfile)
+        # Loop over community files
+        outfile = f'N{N}_{LN}sp.csv'
+        generate_PCGtable(N, Av, LN=LN, outfile=output_folder + '/' + outfile)
