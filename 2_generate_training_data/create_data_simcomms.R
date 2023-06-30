@@ -34,10 +34,11 @@ library(data.table)
 
 parser <- OptionParser(option_list = list(
   make_option(c("-i", "--input"), type="character", default=NULL),
+  make_option(c("-o", "--output"), type="character", default=NULL),
   make_option(c("-n", "--numsamples"), type="integer", default=NULL),
   make_option(c("-p", "--pcgtable"), type="character", default=NULL),
   make_option(c("-c", "--cores"), type="integer", default=NULL),
-  make_option(c("-f", "--fixation_threshold"), type="integer", default=0.5,
+  make_option(c("-f", "--fixation_threshold"), type="double", default=0.5,
               help = "Portion of simulations to be checked for fixation; 0.5 (50%) by default"),
   make_option(c("-s", "--successperc"), type="double", default=0.95,
               help = "Used to define 'success' within a transfer for a sample. Success is considered to have happened when fixation is reached at percN*100% of simulations for that sample and transfer.")
@@ -62,7 +63,11 @@ percN          <- opt$successperc # portion of simulations we're going to check
 # transfer T, we define success at transfer T.
 
 ## output
-output_folder <- paste0("processed_data_simcomms_", fixation_threshold)
+if (is.null(opt$output_folder)) {
+    output_folder <- paste0("processed_data_simcomms_", fixation_threshold)
+} else {
+    output_folder <- opt$output_folder
+}
 output_name <- paste0("RESULT_", basename(simuls_folder))
 
 if (is.null(num_of_samples)) {
@@ -108,8 +113,6 @@ record_success <- function(processed_data, percN=0.9, groups=FALSE) {
   message(paste0("(!) Success is considered to happen when fixation is reached at ", percN*100, "% of simulations"))
   if (groups) {
     combined_df <- do.call(rbind, processed_data$perc)
-    warning(nrow(combined_df))
-    warning(ncol(combined_df)) # DEBUG
     reached_fixation_at <- lapply(combined_df, function(g) which((g %>% as.numeric)>=percN)[1]) %>% as_tibble()
   } else {
     reached_fixation_at <- which((processed_data$perc %>% as.numeric)>=percN)[1]
@@ -147,7 +150,6 @@ if (!is.null(pcgtable)) {
 ################################################################################
 metadata      <- simul_data[order(as.numeric(simul_data$transfer)),] # ordered by transfer
 metadata$size <- as.numeric(metadata$size)
-
 message("Creating 'processed_data'...")
 all_processed_data <- list() # for plots [4] onwards
 
@@ -174,7 +176,7 @@ if (!is.null(pcgtable)) {
 }
 metadata$success <- NA
 
-metadata$final_size # $size is initial_size
+metadata$final_size <- NA # $size is initial_size
 
 metadata$evenness <- NA
 metadata$shannon <- NA
@@ -209,7 +211,7 @@ for (sa in unique(names(all_processed_data))) {
                                 header = T,
                                 drop = 1,
                                 nrows = 1) %>% as_tibble()
-    rel_ab <- abs_ab/initab
+    rel_ab <- abs_ab/selec[selec$transfer==0,]$size # initial size
     
     metadata[metadata$sample==sa & metadata$dilfactor==df,]$evenness     <- pielou(abs_ab)
     metadata[metadata$sample==sa & metadata$dilfactor==df,]$shannon  <- vegan::diversity(abs_ab)
@@ -217,6 +219,4 @@ for (sa in unique(names(all_processed_data))) {
   }
 }
 
-message("saving...") # DEBUG
 write.csv(x = metadata %>% apply(.,2,as.character), file = paste0(output_folder, "/", output_name, ".csv"), row.names = F)
-message("saved!") # DEBUG
