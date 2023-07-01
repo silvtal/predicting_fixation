@@ -1,11 +1,3 @@
-## Script viejo en el que uso GLM para success, pero al final he decidido no
-## hacerlo porque la distribución es rara
-## -----------------------------------------------------------------------------
-
-### https://youtu.be/QctVIuLTKtY?list=PL8F480DgtpW9W-PEX0f2gHl8SnQ7PtKBv
-# 1)  Usar RF para sacar las variables más relevantes
-# 2)  Tomar esos predictores e incluirlos en mi GLM (interacciones, términos no lineales...)
-
 library(party)
 library(dplyr)
 library(pscl)
@@ -38,8 +30,8 @@ for (threshold in c(0.5, 0.9)) {
   csv <- read.csv(my_file)
   csv <- csv[!(colnames(csv) %in%  c("final_size", "filename", "sample"))]
   
-  csv["distrib"] <- ifelse(csv$distrib == "uniform", 1, 0)
-  # csv["log(dilfactor)"] <- log(csv$dilfactor)
+  csv["distrib"]   <- ifelse(csv$distrib == "uniform", 1, 0)
+  csv["dilfactor"] <- log(csv$dilfactor)
   print(paste("Muestras procesadas:", nrow(csv)))
   
   csv <- csv %>%
@@ -56,7 +48,7 @@ for (threshold in c(0.5, 0.9)) {
   # using a boxcox transformation. That's because if we even out our data, the
   # decision trees will be as accurate for values from one extreme as for
   # the rest of the values. See: https://stats.stackexchange.com/a/448153
-  png(paste0(out_folder, "/", prefix, "1__before_boxcox.png"),
+  png(paste0(out_folder, "/", prefix, "before_boxcox.png"),
       width = 1000, height = 600)
   flexplot(success~1, data=csv)
   dev.off()
@@ -64,7 +56,7 @@ for (threshold in c(0.5, 0.9)) {
   bc <- boxcox(success~1, data=csv)
   # csv$success_transformed <- csv$success^(bc$x[which(bc$y==max(bc$y))])
   csv$success <- csv$success^(bc$x[which(bc$y==max(bc$y))])
-  png(paste0(out_folder, "/", prefix, "1__after_boxcox.png"),
+  png(paste0(out_folder, "/", prefix, "after_boxcox.png"),
       width = 1000, height = 600)
   flexplot(success~1, data=csv)
   dev.off()
