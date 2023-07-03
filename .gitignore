@@ -4,10 +4,7 @@
 /3_analysis/.Rhistory
 /3_analysis/.ipynb_checkpoints
 /.ipynb_checkpoints
-/3_analysis/RandomForest_variable_exploration.R
-/3_analysis/GLM short failures.ipynb
-/3_analysis/GLM short.ipynb
-/3_analysis/GLM original.ipynb
-/3_analysis/RF original.ipynb
-/3_analysis/regression_model.R
-/figures/RF_success/RF_success.RData
+/figures/1__RF_success/RF_success.RData
+/figures/2__GLM_failure/GLM_failure.RData
+/figures/2__GLM_failure/*.mp4
+/2_generate_training_data/test

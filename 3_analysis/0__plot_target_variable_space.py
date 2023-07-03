@@ -10,11 +10,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import colors
 import decimal
+import os
+
+output_folder = "/home/silvia/repos/predicting_fixation/figures/0__target_variable_space/"
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
 for perc in [0.5, 0.9]:
     
     # read data ===============================================================
-    csv = pd.read_csv(f"/home/silvia/repos/predicting_fixation/1_datasets/simcomms/processed_data_simcomms_{perc}_full_jun", index_col="sample")
+    csv = pd.read_csv(f"/home/silvia/repos/predicting_fixation/1_datasets/simulation_results/processed_data_simcomms_{perc}_full_jun", index_col="sample")
     
     prefix = str(decimal.Decimal(perc*100)) + "%_"
     
@@ -94,6 +99,6 @@ for perc in [0.5, 0.9]:
         plt.ylabel("Dilution-transfer cycle")
         plt.xticks([])
         plt.xlabel("← Communities →")
-        plt.savefig("../figures/0__target_variable_space_" + prefix + i + ".png")
+        plt.savefig(output_folder + prefix + i + ".png")
         plt.show()
         plt.close()

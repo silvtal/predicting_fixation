@@ -1,4 +1,6 @@
-## not needed
+## this script is called from all create_data_ scripts; create_data_simcomms.R
+## uses create_processed_data() and pielou()
+## =============================================================================
 
 ##### Calculate ################################################################
 #pielou custom function

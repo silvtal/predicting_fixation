@@ -1,3 +1,7 @@
+## This script is sourced from create_data_rhizosphere.R and create_data.R (older, may be bugged)
+## NOT sourced from create_data_simcomms.R
+## =============================================================================
+
 ## Read filenames and create tibble for all the simul_data
 filenames <- list.files(path = simuls_folder, 
                         recursive = TRUE,

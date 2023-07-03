@@ -13,17 +13,21 @@ library(flexplot) #devtools::install_github("dustinfife/flexplot")
     ### interactions or differences in the effect of shannon on success based
     ### on the levels of dilfactor and size.
 library(ggplot2)
-library(DHARMa)
 library(sjPlot)
 
+out_folder = "../figures/RF_success"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
 for (threshold in c(0.5, 0.9)) {
   
   # OPTIONS -----------------------------------------------------------------
-  out_folder = "../figures/RF_success"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
   my_file = paste0("../1_datasets/simcomms/processed_data_simcomms_", threshold, "_full_jun")
   prefix = paste0(threshold*100, "_")
-  maxdilfactor <- 0.01
-  mindilfactor <- 0.00025
+  if (threshold == 0.9) {
+    maxdilfactor <- 0.1
+    mindilfactor <- 0
+  } else {
+    maxdilfactor <- 0.25
+    mindilfactor <- 0
+  }
   my_family <- Gamma(link = "log")
   
   # Load the input data
@@ -31,14 +35,16 @@ for (threshold in c(0.5, 0.9)) {
   csv <- csv[!(colnames(csv) %in%  c("final_size", "filename", "sample"))]
   
   csv["distrib"]   <- ifelse(csv$distrib == "uniform", 1, 0)
+  
+  csv <- csv[(csv$dilfactor < maxdilfactor) & (csv$dilfactor > mindilfactor), ]
   csv["dilfactor"] <- log(csv$dilfactor)
+  
   print(paste("Muestras procesadas:", nrow(csv)))
   
   csv <- csv %>%
     na.omit()
   print(paste("Eliminando los NA:", nrow(csv)))
   
-  csv <- csv[csv$dilfactor < maxdilfactor & csv$dilfactor > mindilfactor, ]
   print(paste("Filtrando por dilution factor (>", mindilfactor, "; <", maxdilfactor, "):", nrow(csv)))
   
   
@@ -50,15 +56,19 @@ for (threshold in c(0.5, 0.9)) {
   # the rest of the values. See: https://stats.stackexchange.com/a/448153
   png(paste0(out_folder, "/", prefix, "before_boxcox.png"),
       width = 1000, height = 600)
-  flexplot(success~1, data=csv)
+  t <- flexplot(success~1, data=csv)
+  plot(t)
   dev.off()
   
   bc <- boxcox(success~1, data=csv)
   # csv$success_transformed <- csv$success^(bc$x[which(bc$y==max(bc$y))])
   csv$success <- csv$success^(bc$x[which(bc$y==max(bc$y))])
+  print(paste("Transformation:", bc$x[which(bc$y==max(bc$y))]))
+  
   png(paste0(out_folder, "/", prefix, "after_boxcox.png"),
       width = 1000, height = 600)
-  flexplot(success~1, data=csv)
+  t <- flexplot(success~1, data=csv)
+  plot(t)
   dev.off()
   
   # make a model with all variables

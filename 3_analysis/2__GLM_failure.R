@@ -9,12 +9,13 @@ library(ggplot2)
 library(DHARMa)
 library(sjPlot)
 
-out_folder = "../figures/GLM_failure/"
+out_folder = "../figures/GLM_failure/"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
 for (threshold in c(0.5, 0.9)) {
   # OPTIONS -----------------------------------------------------------------
   
   my_file = paste0("../1_datasets/simcomms/processed_data_simcomms_", threshold, "_full_jun")
-
+  prefix = paste0(threshold*100, "_")
+  
   # family has to be logistic
   my_family <- binomial(link='logit') # A binomial logistic regression attempts to
                                       # predict the probability that an observation
@@ -32,8 +33,8 @@ for (threshold in c(0.5, 0.9)) {
     prefix = paste0(threshold*100, "_", l, "__")
     
     # Load the input data
-    fcsv <- read.csv(my_file) %>%
-      select(-reached_fixation_at, -final_size, -initial_size, -transfer, -filt_shannon, -filt_even, -filename, -sample) 
+    fcsv <- read.csv(my_file)
+    fcsv <- fcsv[!(colnames(fcsv) %in%  c("final_size", "filename", "sample"))]
     fcsv["distrib"]   <- ifelse(fcsv$distrib == "uniform", 1, 0)
     fcsv["dilfactor"] <- log(fcsv$dilfactor)
     print(paste("Muestras procesadas:", nrow(fcsv)))
@@ -45,7 +46,7 @@ for (threshold in c(0.5, 0.9)) {
     fcsv["failure"] <- is.na(fcsv["success"]) | fcsv["success"] > limit
     
     ### Change diversity metric again
-    failuremodel <- glm("failure ~ size:log(dilfactor) +  raw_even  + size  + log(dilfactor)", data = fcsv, family = my_family)
+    failuremodel <- glm("failure ~ size:dilfactor +  shannon  + size  + dilfactor", data = fcsv, family = my_family)
     
     # assess model --------------------------------------------------------------
     results[[as.character(l)]]$summary <- summary(failuremodel)
@@ -61,6 +62,9 @@ for (threshold in c(0.5, 0.9)) {
     ## and also similar to each other (good)
     
     ## we can see how the levine test goes well here, stable variance between feature values
+    ## unlike:
+    #### successmodel <- glm("success ~ size:dilfactor +  shannon  + size  + dilfactor", data = csv, family = my_family)
+    #### simulatedOutputSuccess <- simulateResiduals(successmodel, integerResponse = F)
     simulatedOutput <- simulateResiduals(failuremodel, integerResponse = T)
     png(paste0(out_folder, "/", prefix, "dharma_simulateResiduals_FAILURE.png"), width = 1000, height = 600)
     plot(simulatedOutput)
@@ -73,6 +77,10 @@ for (threshold in c(0.5, 0.9)) {
     
     
     # Get the z-values from the model summary
+    #### from summary-glm:
+    #### This third column is labelled t ratio if the dispersion is estimated,
+    #### and z ratio if the dispersion is known (or fixed by the family)
+    #### Z-values are a proxy for the importance of each variable.
     z_values <- summary(failuremodel)$coefficients[, "z value"]
       png(paste0(out_folder, "/", prefix, "z-values_FAILURE.png"), width = 1000, height = 600)
     # Create a bar plot of the x-values
@@ -81,8 +89,7 @@ for (threshold in c(0.5, 0.9)) {
             xlab = "Variables", 
             ylab = "z-values",
             main = "Z-values of Coefficients",
-            border = "black",
-            col = z_values
+            border = "black"
     )
     dev.off()
     
@@ -90,10 +97,10 @@ for (threshold in c(0.5, 0.9)) {
     
     
     # Now we can run the anova() function on the model to analyze the table of deviance
-    anova(failuremodel, test="Chisq")
+    results[[as.character(l)]]$anova <- anova(failuremodel, test="Chisq")
     # Df Deviance Resid. Df Resid. Dev  Pr(>Chi)    
     # NULL                                 1844     6125.7              
-    # raw_even             1      1.8      1843     6123.9 4.766e-07 ***
+    # evenness             1      1.8      1843     6123.9 4.766e-07 ***
     #   size                 1   4818.8      1842     1305.2 < 2.2e-16 ***
     #   log(dilfactor)       1   1111.7      1841      193.5 < 2.2e-16 ***
     #   size:log(dilfactor)  1     21.2      1840      172.3 < 2.2e-16 ***
@@ -110,7 +117,7 @@ for (threshold in c(0.5, 0.9)) {
     # barplots ----------------------------------------------------------------
     
     # feature importance (RF !!!!)
-    rf_estimates <- estimates(cforest(failure ~ size:log(dilfactor) +  raw_even  + size  + log(dilfactor),
+    rf_estimates <- estimates(cforest(failure ~ size:dilfactor +  shannon  + size  + dilfactor,
                                       controls = cforest_control(ntree = 400),
                                       data=fcsv))
     feature_importance <- rf_estimates$importance
@@ -148,3 +155,9 @@ for (threshold in c(0.5, 0.9)) {
     dev.off()
   }
 }
+
+print(results)
+
+# just save the image -----------------------------------------------------
+save.image(paste0(out_folder, "/GLM_failure.RData"))
+for (l in c(10, 25, 50, 100, 200, 400, 800, 1000)) {print(c(as.integer(l), results[[as.character(l)]][["mcfadden"]]))}

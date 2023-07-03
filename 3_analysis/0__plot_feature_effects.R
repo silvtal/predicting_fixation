@@ -1,14 +1,19 @@
 library(dplyr)
 library(flexplot)
 
-for (threshold in c(0.5, 0.9)) {
+for (threshold in c(0.5)) {
   
   # OPTIONS -----------------------------------------------------------------
   out_folder = "../figures/feature_effects"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
   my_file = paste0("../1_datasets/simcomms/processed_data_simcomms_", threshold, "_full_jun")
   prefix = paste0(threshold*100, "_")
-  maxdilfactor <- 0.01
-  mindilfactor <- 0.00025
+  if (threshold == 0.9) {
+    maxdilfactor <- 0.1
+    mindilfactor <- 0
+  } else {
+    maxdilfactor <- 0.25
+    mindilfactor <- 0
+  }
   my_family <- Gamma(link = "log")
   
   # Load the input data
@@ -26,11 +31,11 @@ for (threshold in c(0.5, 0.9)) {
   csv <- csv[csv$dilfactor < maxdilfactor & csv$dilfactor > mindilfactor, ]
   print(paste("Filtrando por dilution factor (>", mindilfactor, "; <", maxdilfactor, "):", nrow(csv)))
  
-  for (var in colnames(csv)) {
+  for (var in colnames(csv)[colnames(csv) != "success"]) {
     png(paste0(out_folder, "/", prefix, var, "_effect.png"),
         width = 1000, height = 600)
     csv$var <- csv[[var]]
-    f <- flexplot(success~var, data=csv[colnames(csv) != "success"])
+    f <- flexplot(success~var, data=csv)
     plot(f)
     csv$var <- NULL
     dev.off()
