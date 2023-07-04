@@ -27,8 +27,15 @@ The `create_data` scripts generate tables from the raw neutral simulations resul
 
 `create_data_simcomms.R` is designed for the multi-PCGs rhizosphere dataset and depends on the functions defined on `simul_fixation_functions.R`.
 
-`create_data_simcomms.R` is a modification of this script tailored for the computationally generated communities. It depends on some of the functions defined on `simul_fixation_functions.R` but it also has some modifications to adapt for the specific input format of this dataset plus the fact that it doesn't have multiple PCGs. **This script is suitable for many community types**, with an option to include to include multiple functional groups separately or not**.
+`create_data_simcomms.R` is a modification of this script tailored for the computationally generated communities. It depends on some of the functions defined on `simul_fixation_functions.R` but it also has some modifications to adapt for the specific input format of this dataset plus the fact that it doesn't have multiple PCGs. **This script is suitable for many community types**, with an option to include multiple functional groups separately or not.
 
-### Regression model script
 
-WIP
+### Analysis scripts (for one-group communities)
+
+- `0__` scripts allow for preliminary visualization of the variables and their relationship with OTU fixation.
+
+- `1__RF_success.R` goes a step further in order to quantify the effects of our variables. It defines the target variable, "success", as the dilution-growth cycle number in which one OTU is fixated, meaning it has reached a relative abundance of 50% or 90% from the total community size. Then it creates a series of random forest models to quantify the importance of each variable.
+
+- In `2__GLM_failure.R` we define the target variable, "failure", as a boolean value which indicates whether fixation has failed (1, fixation did not occur) in a community before the Nth cycle or not (0). Since it's a binary variable, we can use a GLM which returns linear coefficients for each variable. We make multiple models for multiple N values ranging from 10 to 1000.
+
+All figures are saved to the `figures` folder.

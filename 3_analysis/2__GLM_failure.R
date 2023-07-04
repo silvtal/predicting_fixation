@@ -9,11 +9,10 @@ library(ggplot2)
 library(DHARMa)
 library(sjPlot)
 
-out_folder = "../figures/GLM_failure/"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
+out_folder = "../figures/2__GLM_failure/"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
 for (threshold in c(0.5, 0.9)) {
   # OPTIONS -----------------------------------------------------------------
-  
-  my_file = paste0("../1_datasets/simcomms/processed_data_simcomms_", threshold, "_full_jun")
+  my_file = paste0("../1_datasets/simulation_results/processed_data_simcomms_", threshold, "_full_jun")
   prefix = paste0(threshold*100, "_")
   
   # family has to be logistic
@@ -25,7 +24,6 @@ for (threshold in c(0.5, 0.9)) {
                                       # either continuous or categorical.
   results <- list()
   for (l in c(10, 25, 50, 100, 200, 400, 800, 1000)) {
-  # for (l in c(100)) {
     results[[as.character(l)]] <- list()
     
     limit <- l # if fixation takes more than <limit> cycles to happen, that's a failure too

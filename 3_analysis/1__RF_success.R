@@ -15,11 +15,10 @@ library(flexplot) #devtools::install_github("dustinfife/flexplot")
 library(ggplot2)
 library(sjPlot)
 
-out_folder = "../figures/RF_success"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
+out_folder = "../figures/1__RF_success"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
 for (threshold in c(0.5, 0.9)) {
-  
   # OPTIONS -----------------------------------------------------------------
-  my_file = paste0("../1_datasets/simcomms/processed_data_simcomms_", threshold, "_full_jun")
+  my_file = paste0("../1_datasets/simulation_results/processed_data_simcomms_", threshold, "_full_jun")
   prefix = paste0(threshold*100, "_")
   if (threshold == 0.9) {
     maxdilfactor <- 0.1

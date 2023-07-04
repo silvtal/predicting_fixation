@@ -8,3 +8,13 @@
 /figures/2__GLM_failure/GLM_failure.RData
 /figures/2__GLM_failure/*.mp4
 /2_generate_training_data/test
+/3_analysis/RandomForest_variable_exploration.R
+/3_analysis/GLM short failures.ipynb
+/3_analysis/GLM short.ipynb
+/3_analysis/GLM original.ipynb
+/3_analysis/RF original.ipynb
+/3_analysis/regression_model.R
+/2_generate_training_data/create_data_rhizosphere.R
+/2_generate_training_data/create_data.R
+/2_generate_training_data/read_simul_data.R
+/1_datasets/revision.ods
