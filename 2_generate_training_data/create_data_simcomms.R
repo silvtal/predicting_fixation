@@ -34,7 +34,7 @@ library(data.table)
 
 parser <- OptionParser(option_list = list(
   make_option(c("-i", "--input"), type="character", default=NULL),
-  make_option(c("-o", "--output"), type="character", default=NULL),
+  make_option(c("-o", "--output_folder"), type="character", default=NULL),
   make_option(c("-n", "--numsamples"), type="integer", default=NULL),
   make_option(c("-p", "--pcgtable"), type="character", default=NULL),
   make_option(c("-c", "--cores"), type="integer", default=NULL),
@@ -62,17 +62,31 @@ percN          <- opt$successperc # portion of simulations we're going to check
 # from one sample have reached fixation at
 # transfer T, we define success at transfer T.
 
+if (is.null(num_of_samples)) {
+  stop("You must specify the number of samples")
+}
+
 ## output
 if (is.null(opt$output_folder)) {
     output_folder <- paste0("processed_data_simcomms_", fixation_threshold)
 } else {
     output_folder <- opt$output_folder
 }
+if (!file.exists(output_folder)) {system(paste("mkdir -p", output_folder))}
 output_name <- paste0("RESULT_", basename(simuls_folder))
 
-if (is.null(num_of_samples)) {
-  stop("You must specify the number of samples")
-}
+
+
+## DEBUG
+cores=1
+simuls_folder="~/simcomms_WITH_GROUPS_2023-07-04/SIMCOMM_SIMS_0.05_lognorm_1e+06_sp_10_gr_9_2/"
+
+num_of_samples <- 30
+pcgtable       <- "~/repos/predicting_fixation/1_datasets/PCGtables/N3_10sp.csv"
+percN          <- 0.9
+output_folder <- paste0("TEST_create_data_", percN)
+if (!file.exists(output_folder)) {system(paste("mkdir -p", output_folder))}
+output_name <- paste0("RESULT_", basename(simuls_folder))
 
 ## Functions ###################################################################
 source("simul_fixation_functions.R")
@@ -109,6 +123,37 @@ read_simul_data <- function(simuls_folder, num_of_samples) {
 }
 
 
+# parsing of filenames is different...
+read_simul_data_groups <- function(simuls_folder, num_of_samples) {
+  ## This function reads the filenames, but doesn't really open the files!
+  filenames <- c()
+  for (samplenum in 1:num_of_samples) {
+    filenames <- c(filenames, list.files(path = paste0(simuls_folder, samplenum),
+                                         pattern = "*.csv",
+                                         recursive = TRUE,
+                                         full.names = TRUE)
+    )
+  }
+  
+  simul_data <- mapply(filenames, FUN=function(full_name) {
+    last_dir <- tail(strsplit(dirname(full_name), "/")[[1]], 1)
+    name  <- paste(last_dir, basename(full_name), sep = "/")
+    name  <- str_sub(name, end=-5) # remove ".csv"
+    split <- str_split(name, "_")[[1]]
+    return(list(
+      "distrib" = split[4],
+      "size" = split[5],
+      "richness" = split[7],
+      "dilfactor" = as.numeric(split[3]),
+      "filename" = full_name,
+      "sample" = paste(str_split(split[10], "/")[[1]][1],
+                       split[4], split[5], split[7], sep = "_"),
+      "groups" = as.numeric(split[9]),
+      "transfer" = as.numeric(split[13])
+    ))
+  }) %>% t %>% as_tibble()
+}
+
 record_success <- function(processed_data, percN=0.9, groups=FALSE) {
   message(paste0("(!) Success is considered to happen when fixation is reached at ", percN*100, "% of simulations"))
   if (groups) {
@@ -122,7 +167,12 @@ record_success <- function(processed_data, percN=0.9, groups=FALSE) {
 
 ## Load all data and metadata ##################################################
 options(scipen=10)
-simul_data <- read_simul_data(simuls_folder, num_of_samples)
+if (is.null(pcgtable)) {
+  simul_data <- read_simul_data_groups(simuls_folder, num_of_samples)
+} else {
+  simul_data <- read_simul_data(simuls_folder, num_of_samples)
+}
+
 message(paste0("Read data!
 ----------
 nrow>> ", nrow(simul_data), "
@@ -135,8 +185,6 @@ dilution factors>> ", paste(unique(simul_data$dilfactor), collapse=', '),"
 community sizes >> ", paste(unique(simul_data$size), collapse=', '),"
 
 samples>> ", paste(unique(simul_data$sample), collapse = ', ')))
-
-if (!file.exists(output_folder)) {system(paste("mkdir -p", output_folder))}
 
 if (!is.null(pcgtable)) {
   pcg_info <- fread(pcgtable)

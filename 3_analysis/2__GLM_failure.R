@@ -24,7 +24,7 @@ for (threshold in c(0.5, 0.9)) {
                                       # either continuous or categorical.
   results <- list()
   for (l in c(10, 25, 50, 100, 200, 400, 800, 1000)) {
-    results[[as.character(l)]] <- list()
+    results[[as.character(threshold)]][[as.character(l)]] <- list()
     
     limit <- l # if fixation takes more than <limit> cycles to happen, that's a failure too
     
@@ -47,8 +47,8 @@ for (threshold in c(0.5, 0.9)) {
     failuremodel <- glm("failure ~ size:dilfactor +  shannon  + size  + dilfactor", data = fcsv, family = my_family)
     
     # assess model --------------------------------------------------------------
-    results[[as.character(l)]]$summary <- summary(failuremodel)
-    results[[as.character(l)]]$model   <- failuremodel
+    results[[as.character(threshold)]][[as.character(l)]]$summary <- summary(failuremodel)
+    results[[as.character(threshold)]][[as.character(l)]]$model   <- failuremodel
     
     ## first we check the residuals
       # Deviance Residuals: 
@@ -95,7 +95,7 @@ for (threshold in c(0.5, 0.9)) {
     
     
     # Now we can run the anova() function on the model to analyze the table of deviance
-    results[[as.character(l)]]$anova <- anova(failuremodel, test="Chisq")
+    results[[as.character(threshold)]][[as.character(l)]]$anova <- anova(failuremodel, test="Chisq")
     # Df Deviance Resid. Df Resid. Dev  Pr(>Chi)    
     # NULL                                 1844     6125.7              
     # evenness             1      1.8      1843     6123.9 4.766e-07 ***
@@ -108,7 +108,7 @@ for (threshold in c(0.5, 0.9)) {
     
     # While no exact equivalent to the R2 of linear regression exists, the McFadden
     # R2 index can be used to assess the model fit.
-    results[[as.character(l)]]$mcfadden <- pscl::pR2(failuremodel)
+    results[[as.character(threshold)]][[as.character(l)]]$mcfadden <- pscl::pR2(failuremodel)
     
     
     
@@ -119,7 +119,7 @@ for (threshold in c(0.5, 0.9)) {
                                       controls = cforest_control(ntree = 400),
                                       data=fcsv))
     feature_importance <- rf_estimates$importance
-    results[[as.character(l)]]$FI <- feature_importance
+    results[[as.character(threshold)]][[as.character(l)]]$FI <- feature_importance
     
     # bar plot for feature importance
     feature_df <- data.frame(Feature = names(feature_importance),
@@ -158,4 +158,4 @@ print(results)
 
 # just save the image -----------------------------------------------------
 save.image(paste0(out_folder, "/GLM_failure.RData"))
-for (l in c(10, 25, 50, 100, 200, 400, 800, 1000)) {print(c(as.integer(l), results[[as.character(l)]][["mcfadden"]]))}
+for (l in c(10, 25, 50, 100, 200, 400, 800, 1000)) {print(c(as.integer(l), results[[as.character(threshold)]][[as.character(l)]][["mcfadden"]]))}
