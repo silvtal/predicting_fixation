@@ -9,11 +9,25 @@ library(ggplot2)
 library(DHARMa)
 library(sjPlot)
 
+results <- list()
 out_folder = "../figures/2__GLM_failure/"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
 for (threshold in c(0.5, 0.9)) {
   # OPTIONS -----------------------------------------------------------------
-  my_file = paste0("../1_datasets/simulation_results/processed_data_simcomms_", threshold, "_full_jun")
+  my_file = paste0("../1_datasets/simulation_results/processed_data_simcomms_", 0.5, "_full_jun")
   prefix = paste0(threshold*100, "_")
+
+  # Load the input data
+  fcsv <- read.csv(my_file)
+  fcsv <- fcsv[!(colnames(fcsv) %in%  c("final_size", "filename", "sample"))]
+  fcsv["distrib"]   <- ifelse(fcsv$distrib == "uniform", 1, 0)
+  fcsv["dilfactor"] <- log(fcsv$dilfactor)
+  print(paste("Muestras procesadas:", nrow(fcsv)))
+  
+  # fcsv <- fcsv[fcsv$dilfactor < maxdilfactor & fcsv$dilfactor > mindilfactor, ]
+  # print(paste("Filtrando por dilution factor (>", mindilfactor, "; <", maxdilfactor, "):", nrow(fcsv)))
+  
+  # Create "failure" variable
+  fcsv["failure"] <- is.na(fcsv["success"]) | fcsv["success"] > limit
   
   # family has to be logistic
   my_family <- binomial(link='logit') # A binomial logistic regression attempts to
@@ -22,26 +36,13 @@ for (threshold in c(0.5, 0.9)) {
                                       # dichotomous dependent variable based on one
                                       # or more independent variables that can be
                                       # either continuous or categorical.
-  results <- list()
+
   for (l in c(10, 25, 50, 100, 200, 400, 800, 1000)) {
     results[[as.character(threshold)]][[as.character(l)]] <- list()
     
     limit <- l # if fixation takes more than <limit> cycles to happen, that's a failure too
     
     prefix = paste0(threshold*100, "_", l, "__")
-    
-    # Load the input data
-    fcsv <- read.csv(my_file)
-    fcsv <- fcsv[!(colnames(fcsv) %in%  c("final_size", "filename", "sample"))]
-    fcsv["distrib"]   <- ifelse(fcsv$distrib == "uniform", 1, 0)
-    fcsv["dilfactor"] <- log(fcsv$dilfactor)
-    print(paste("Muestras procesadas:", nrow(fcsv)))
-    
-    # fcsv <- fcsv[fcsv$dilfactor < maxdilfactor & fcsv$dilfactor > mindilfactor, ]
-    # print(paste("Filtrando por dilution factor (>", mindilfactor, "; <", maxdilfactor, "):", nrow(fcsv)))
-    
-    # Create "failure" variable
-    fcsv["failure"] <- is.na(fcsv["success"]) | fcsv["success"] > limit
     
     ### Change diversity metric again
     failuremodel <- glm("failure ~ size:dilfactor +  shannon  + size  + dilfactor", data = fcsv, family = my_family)

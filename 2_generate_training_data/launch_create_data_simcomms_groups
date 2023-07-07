@@ -1,46 +1,42 @@
 #!/bin/bash
-#conda activate cmake # not needed here. Pero hace falta para instalar bien ggpubr antes de correr esto
 
 ## will run for inputs:
-## - 0.8 0.5 0.1 0.05 0.01 0.008 0.005 0.001 0.25 0.05 0.04 0.025 0.005 0.004 0.0025 0.0005 0.0004 0.00025
-## - size 10000 10e+06
-## - uniform lognormal
-## - sp in 10 100 1000
-## - 30 samples for community type (-n 30)
+########################################
+##### dilution factors:  9 values  #####
+##### only up to 200 cycles        #####
+#########################################################################
+##### Initial communities: SIMULATED with generate_simcomms.R       #####
+##### (60 total)           size:    10⁶                             #####
+#####                      species: 100, 1000                      #####
+#####                      abundance distrib: log-normal            #####
+#####                            ((30 communities, reps 1-30))      #####
+#########################################################################
 
 
 ## Simuls folder format::
 ## simul_folder => ../results_null_model/simcomms_2023-02-16/
-## filenames    => "SIMCOMM_SIMS_0.8_uniform_10000_sp_10_9/simul_9_t_86.csv"
+## filenames    =>  SIMCOMM_SIMS_"$g$nichedist"_"${fdil}"_"${distrib}"_sp_"${sp}"_"${sa}"
+##                 "SIMCOMM_SIMS_0.8_uniform_10000_sp_10_9/simul_9_t_86.csv"
 ##                                 3       4     5     7 8           1
 
 perc=0.9 # percentage of simulations with fixation needed for success
 n=30     # number of unique samples for each community type
-input_folder=../../results_null_model/simcomms_WITH_GROUPS_2023-07-04
+input_folder=../../results_null_model/simcomms_WITH_GROUPS_2023-07-06
 output_folder=../../results_null_model/parsed_results_$perc
 
-for fdil in 0.8 0.5 0.1 0.05 0.01 0.008 0.005 0.001 0.25 0.05 0.04 0.025 0.005 0.004 0.0025 0.0005 0.0004 0.00025
+for fdil in 0.00025 0.0005 0.001 0.0025 0.005 0.01 0.025 0.05 0.1
 do
-    for size in 10000 10e+06
+    for size in 10e+06
     do
-      for sp in 10 100 1000
+      for sp in 100 1000
       do
-        for distrib in lognormal ## excluded uniform communities !
+        for distrib in lognormal
         do
-          ## Choose number of groups
-          if [ $sp -eq 10 ]
-          then
-            groupslist="3"
-          else if [ $sp -eq 100 ]
-            groupslist="3 10"
-          else # sp == 1000
-            groupslist="3 10 30"
-          fi
-          
+          groupslist="3 10"
           for g in $groupslist
           do
             echo $g
-            
+	    for nichedist in SkewedNiches EvenNiches
             ## Choose group distribution
             # if [ $distrib = "uniform" ]
             # then
@@ -48,12 +44,17 @@ do
             # else
             #   pcgtable=../data/PCGtable/SkewedGroups_N"$g"_"$sp"sp.csv
             # fi
-            pcgtable=../data/predicting_fixation/1_datasets/PCGtables/N"$g"_"$sp"sp.csv
+            pcgtable=../data/predicting_fixation/1_datasets/PCGtables/"$nichedist"_N"$g"_"$sp"sp.csv
             
+######## WIP
+######## simul wrapper output is
+######## SIMCOMM_SIMS_'$nicheN$nichedist'_'$fdil'_'$distrib'_sp_'$sp'_'$sa'
+######## make it similar but legible w read_simul_data()
+######## WIP
             ## PCGtable is chosen; run script
-            echo "launching script for ../results_null_model/SIMCOMM_SIMS_"$fdil"_"$distrib"_"$size"_sp_"$sp"(...)"
+            echo "launching script for ../results_null_model/SIMCOMM_SIMS_"$g"_"$nichedist"_"$fdil"_"$distrib"_"$size"_sp_"$sp"(...)"
             echo -e \#\!/bin/bash > temp
-            echo "~/R-4.0.5/bin/Rscript create_data_simcomms.R --input "$input_folder"/SIMCOMM_SIMS_"$fdil"_"$distrib"_"$size"_sp_"$sp"_gr"$g"_ --output_folder "$output_folder" -n "$n" -p "$pcgtable" -s "$perc >> temp
+            echo "~/R-4.0.5/bin/Rscript create_data_simcomms.R --input "$input_folder"/SIMCOMM_SIMS_"$g"_"$nichedist"_"$fdil"_"$distrib"_"$size"_sp_"$sp"_ --output_folder "$output_folder" -n "$n" -p "$pcgtable" -s "$perc >> temp
             sbatch -A microbioma_serv -p bio temp
 
             rm temp

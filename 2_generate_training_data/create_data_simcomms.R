@@ -4,6 +4,7 @@
 ## simul_folder format => ../results_null_model/simcomms_2023-02-17/
 ## filenames format    => "SIMCOMM_SIMS_0.8_uniform_10000_sp_10_9/simul_9_t_86.csv"
 ##                                        3       4     5     7 8           11
+## or                  => SIMCOMM_SIMS_"$g"_"$nichedist"_"$fdil"_"$distrib"_"$size"_sp_"$sp"_$sa/simul_<i>_t_$transfer.csv
 # -n or --numsamples: The number of simulation samples.
 # pcgtable: Table with information about groups, including relative abundance
 #           and OTU names for each group. If it's NULL, it's assumed there are
@@ -75,19 +76,6 @@ if (is.null(opt$output_folder)) {
 if (!file.exists(output_folder)) {system(paste("mkdir -p", output_folder))}
 output_name <- paste0("RESULT_", basename(simuls_folder))
 
-
-
-## DEBUG
-cores=1
-simuls_folder="~/simcomms_WITH_GROUPS_2023-07-04/SIMCOMM_SIMS_0.05_lognorm_1e+06_sp_10_gr_9_2/"
-
-num_of_samples <- 30
-pcgtable       <- "~/repos/predicting_fixation/1_datasets/PCGtables/N3_10sp.csv"
-percN          <- 0.9
-output_folder <- paste0("TEST_create_data_", percN)
-if (!file.exists(output_folder)) {system(paste("mkdir -p", output_folder))}
-output_name <- paste0("RESULT_", basename(simuls_folder))
-
 ## Functions ###################################################################
 source("simul_fixation_functions.R")
 # pielou()
@@ -141,14 +129,15 @@ read_simul_data_groups <- function(simuls_folder, num_of_samples) {
     name  <- str_sub(name, end=-5) # remove ".csv"
     split <- str_split(name, "_")[[1]]
     return(list(
-      "distrib" = split[4],
-      "size" = split[5],
-      "richness" = split[7],
-      "dilfactor" = as.numeric(split[3]),
+      "distrib" = split[6],
+      "size" = split[7],
+      "richness" = split[8],
+      "dilfactor" = as.numeric(split[5]),
       "filename" = full_name,
       "sample" = paste(str_split(split[10], "/")[[1]][1],
-                       split[4], split[5], split[7], sep = "_"),
-      "groups" = as.numeric(split[9]),
+                       split[6], split[7], split[9], sep = "_"),
+      "nicheN" = as.numeric(split[3]),
+      "nichedist" = as.numeric(split[4]),
       "transfer" = as.numeric(split[13])
     ))
   }) %>% t %>% as_tibble()
