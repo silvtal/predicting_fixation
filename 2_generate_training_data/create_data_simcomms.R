@@ -202,7 +202,6 @@ for (sa in unique(metadata$sample)) {
 ## NEW COLUMNS; let's do a preliminary filter to reduce the number of rows to 1
 ## (one row per sample)
 metadata <- metadata[metadata$transfer==0,]
-metadata$transfer <- NULL
 
 ## $success: fixation for *all cores* in a sample for a given dilution factor
 ################################################################################
@@ -255,5 +254,7 @@ for (sa in unique(names(all_processed_data))) {
     metadata[metadata$sample==sa & metadata$dilfactor==df,]$gini         <- Gini(abs_ab)
   }
 }
+
+metadata$transfer <- NULL
 
 write.csv(x = metadata %>% apply(.,2,as.character), file = paste0(output_folder, "/", output_name, ".csv"), row.names = F)
