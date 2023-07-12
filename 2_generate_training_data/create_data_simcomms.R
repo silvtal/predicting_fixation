@@ -156,7 +156,7 @@ record_success <- function(processed_data, percN=0.9, groups=FALSE) {
 
 ## Load all data and metadata ##################################################
 options(scipen=10)
-if (is.null(pcgtable)) {
+if (!is.null(pcgtable)) {
   simul_data <- read_simul_data_groups(simuls_folder, num_of_samples)
 } else {
   simul_data <- read_simul_data(simuls_folder, num_of_samples)
