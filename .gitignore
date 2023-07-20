@@ -6,6 +6,7 @@
 /2_generate_training_data/create_data_rhizosphere.R
 /2_generate_training_data/create_data.R
 /2_generate_training_data/read_simul_data.R
+/2_generate_training_data/.Rhistory
 /3_analysis/plots_R
 /3_analysis/regression_model.R
 /3_analysis/.Rhistory

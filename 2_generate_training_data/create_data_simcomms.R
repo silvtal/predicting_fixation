@@ -122,7 +122,6 @@ read_simul_data_groups <- function(simuls_folder, num_of_samples) {
                                          full.names = TRUE)
     )
   }
-  
   simul_data <- mapply(filenames, FUN=function(full_name) {
     last_dir <- tail(strsplit(dirname(full_name), "/")[[1]], 1)
     name  <- paste(last_dir, basename(full_name), sep = "/")
@@ -131,25 +130,26 @@ read_simul_data_groups <- function(simuls_folder, num_of_samples) {
     return(list(
       "distrib" = split[6],
       "size" = split[7],
-      "richness" = split[8],
+      "richness" = split[9],
       "dilfactor" = as.numeric(split[5]),
       "filename" = full_name,
       "sample" = paste(str_split(split[10], "/")[[1]][1],
                        split[6], split[7], split[9], sep = "_"),
       "nicheN" = as.numeric(split[3]),
-      "nichedist" = as.numeric(split[4]),
+      "nichedist" = split[4],
       "transfer" = as.numeric(split[13])
     ))
   }) %>% t %>% as_tibble()
 }
 
-record_success <- function(processed_data, percN=0.9, groups=FALSE) {
+record_success <- function(processed_data, percN=0.95, groups=FALSE) {
   message(paste0("(!) Success is considered to happen when fixation is reached at ", percN*100, "% of simulations"))
   if (groups) {
     combined_df <- do.call(rbind, processed_data$perc)
-    reached_fixation_at <- lapply(combined_df, function(g) which((g %>% as.numeric)>=percN)[1]) %>% as_tibble()
+    # must substract 1: position 2 contains the result of the 1st cycle
+    reached_fixation_at <- lapply(combined_df, function(g) which((g %>% as.numeric)>=percN)[1] - 1 )%>% as_tibble()
   } else {
-    reached_fixation_at <- which((processed_data$perc %>% as.numeric)>=percN)[1]
+    reached_fixation_at <- which((processed_data$perc %>% as.numeric)>=percN)[1] - 1
   }
   return(reached_fixation_at)
 }
@@ -221,11 +221,11 @@ metadata$gini <- NA
 
 for (sa in unique(names(all_processed_data))) {
   for (df in unique(all_processed_data[[sa]]$dilfactor)) {
-    selec <- all_processed_data[[sa]][all_processed_data[[sa]]$dilfactor==df,][c("perc",
-                                                                                 "dilfactor",
-                                                                                 "transfer",
-                                                                                 "size",
-                                                                                 "filename")]
+    selec <- all_processed_data[[sa]][unlist(all_processed_data[[sa]]$dilfactor)==df,][c("perc",
+                                                                                         "dilfactor",
+                                                                                         "transfer",
+                                                                                         "size",
+                                                                                         "filename")]
     successes <- record_success(selec, percN, groups=!is.null(pcgtable))
     
     # final_size

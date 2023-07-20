@@ -57,21 +57,9 @@ create_processed_data <- function (metadata, fixation_threshold,
                   }, mc.cores = cores
   )
 
-  ## [$table]
-  ## We're only going to save a small abundance table (initial abundances)
-  processed_metadata$table <- mclapply(processed_metadata$filename,
-                                       FUN=function(n) {
-                                         abuntable <- data.table::fread(n, header = T, nrows = 1, drop = 1) %>%
-                                           as_tibble() # only need the first line; all simuls are the same at time==0
-                                         abuntable <- (abuntable/rowSums(abuntable)) %>% replace(is.na(.), fixation_threshold)
-                                         return(abuntable)
-                                       }, mc.cores = cores
-  )
-
   ## If there's a PCG table,
   ## - we add extra variable $group_sizes
   ## - $fixated and $perc will be a vector of values
-
   if (!is.null(pcg_info)) {
     ## [$group_sizes]
     processed_metadata$group_sizes <- mclapply(tmp, function(t) {
@@ -100,7 +88,7 @@ create_processed_data <- function (metadata, fixation_threshold,
 
       ## First we normalize the abundances
       t <- tmp[[i]]
-      t <- t/colSums(t)
+      t <- sweep(t,2,colSums(t),`/`)
       t[is.na(t)] <- fixation_threshold
 
       group_df <-
@@ -137,7 +125,7 @@ create_processed_data <- function (metadata, fixation_threshold,
     ## [$fixated]
     processed_metadata$fixated <- mclapply(tmp,
                                          FUN=function(t) {
-                                           t <- t/colSums(t)
+                                           t <- sweep(t,2,colSums(t),`/`)
                                            t[is.na(t)] <- fixation_threshold
                                            apply(t, 2, function(x) any(x >= fixation_threshold))
                                            }, mc.cores = cores
@@ -154,35 +142,10 @@ create_processed_data <- function (metadata, fixation_threshold,
 }
 
 
-# When we have multiple groups in the same sample, this function is not neeeded:
-# cores will already be specified in the loaded PCG table, and richnesses will
-# already be included in the processed_data table.
-# This is used for the tomato dataset, not the simcomm one.
-create_sample_info <- function(processed_data, cores=1) {
-  ###---------------------------------------------------------------------------
-  ### Table with info (original abundance, richness) for each PCG
-  ###---------------------------------------------------------------------------
-  info_data <- processed_data[processed_data$transfer==0,][c("core", "table")]
-  info_data <- distinct(info_data)
-  n <- info_data$core
-  info_data <- mclapply((1:nrow(info_data)),
-                        FUN=function(row) {
-                          cbind(
-                            "core"= info_data$core[[row]],
-                            sort(info_data$table[[row]], decreasing = TRUE)[1:min(5, ncol(info_data$table[[row]]))],
-                            "richness"=ncol(info_data$table[[row]])
-                          )
-                        }, mc.cores=cores
-  )
-  names(info_data) <- n
-  return(info_data) # sample_info[[sa]]
-}
 
-
-
+## For tomato rhizosphere samples, where we had one-core samples that could be
+## grouped into multi-core communities.
 record_fixation <- function(processed_data) {
-  ## For tomato rhizosphere samples, where we had one-core samples that could be
-  ## grouped into multi-core communities.
   reached_fixation_at <- c()
   corenames <- unique(processed_data$core)
   for (c in corenames) {

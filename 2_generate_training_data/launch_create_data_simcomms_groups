@@ -37,6 +37,7 @@ do
           do
             echo $g
 	    for nichedist in SkewedNiches EvenNiches
+            do
             ## Choose group distribution
             # if [ $distrib = "uniform" ]
             # then
@@ -62,4 +63,5 @@ do
       done
     done
   done
+done
 done
