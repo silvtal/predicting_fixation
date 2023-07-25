@@ -4,7 +4,7 @@ library(flexplot)
 out_folder = "../figures/0__feature_effects"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
 for (threshold in c(0.5, 0.9)) {
   # OPTIONS -----------------------------------------------------------------
-  my_file = paste0("../1_datasets/simulation_results/processed_data_simcomms_", threshold, "_full_jun")
+  my_file = paste0("../1_datasets/simulation_results/processed_data_simcomms_", threshold, "_full_jul")
   prefix = paste0(threshold*100, "_")
   if (threshold == 0.9) {
     maxdilfactor <- 0.1
@@ -34,7 +34,7 @@ for (threshold in c(0.5, 0.9)) {
     png(paste0(out_folder, "/", prefix, var, "_effect.png"),
         width = 1000, height = 600)
     csv$var <- csv[[var]]
-    f <- flexplot(success~var, data=csv)
+    f <- flexplot(success~var + richness, data=csv)
     plot(f)
     csv$var <- NULL
     dev.off()

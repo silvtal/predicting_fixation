@@ -13,7 +13,7 @@ results <- list()
 out_folder = "../figures/2__GLM_failure/"; if (!file.exists(out_folder)) {system(paste("mkdir -p", out_folder))}
 for (threshold in c(0.5, 0.9)) {
   # OPTIONS -----------------------------------------------------------------
-  my_file = paste0("../1_datasets/simulation_results/processed_data_simcomms_", 0.5, "_full_jun")
+  my_file = paste0("../1_datasets/simulation_results/processed_data_simcomms_", threshold, "_full_jul")
   prefix = paste0(threshold*100, "_")
 
   # Load the input data
@@ -26,9 +26,6 @@ for (threshold in c(0.5, 0.9)) {
   # fcsv <- fcsv[fcsv$dilfactor < maxdilfactor & fcsv$dilfactor > mindilfactor, ]
   # print(paste("Filtrando por dilution factor (>", mindilfactor, "; <", maxdilfactor, "):", nrow(fcsv)))
   
-  # Create "failure" variable
-  fcsv["failure"] <- is.na(fcsv["success"]) | fcsv["success"] > limit
-  
   # family has to be logistic
   my_family <- binomial(link='logit') # A binomial logistic regression attempts to
                                       # predict the probability that an observation
@@ -40,7 +37,9 @@ for (threshold in c(0.5, 0.9)) {
   for (l in c(10, 25, 50, 100, 200, 400, 800, 1000)) {
     results[[as.character(threshold)]][[as.character(l)]] <- list()
     
-    limit <- l # if fixation takes more than <limit> cycles to happen, that's a failure too
+    # Create "failure" variable
+    # if fixation takes more than <limit> cycles to happen, that's a failure too
+    fcsv["failure"] <- is.na(fcsv["success"]) | fcsv["success"] > l
     
     prefix = paste0(threshold*100, "_", l, "__")
     
@@ -159,4 +158,5 @@ print(results)
 
 # just save the image -----------------------------------------------------
 save.image(paste0(out_folder, "/GLM_failure.RData"))
-for (l in c(10, 25, 50, 100, 200, 400, 800, 1000)) {print(c(as.integer(l), results[[as.character(threshold)]][[as.character(l)]][["mcfadden"]]))}
+#for (l in c(10, 25, 50, 100, 200, 400, 800, 1000)) {print(c(as.integer(l), results[[as.character(threshold)]][[as.character(l)]][["mcfadden"]]))}
+# for (n in c("25", "50", "100", "200")) {print(results[["0.9"]][[n]]$summary)}

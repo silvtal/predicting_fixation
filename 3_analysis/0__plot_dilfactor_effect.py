@@ -31,7 +31,7 @@ perc = 0.5
 mydilfactors = [0.00025, 0.0005, 0.001, 0.0025, 0.004, 0.005, 0.008, 0.025]
 
 # read data ===============================================================
-csv = pd.read_csv(f"/home/silvia/repos/predicting_fixation/1_datasets/simulation_results/processed_data_simcomms_{perc}_full_jun")
+csv = pd.read_csv(f"/home/silvia/repos/predicting_fixation/1_datasets/simulation_results/processed_data_simcomms_{perc}_full_jul")
 mydilfactors = csv.dilfactor.unique() # DEBUG
 
 prefix = str(decimal.Decimal(perc*100)) + "%_"
@@ -154,7 +154,7 @@ plt.xlabel("← Dilfactor →")
 for c in csv["sample"].unique():
     plt.plot(csv.loc[csv["sample"] == c]["dilfactor2"], csv.success[csv["sample"] == c], linestyle='-', marker='', alpha=0.5, linewidth=0.5)
     
-plt.savefig("/home/silvia/test.png")
+plt.savefig("/home/silvia/repos/predicting_fixation/figures/0__dilfactor_effect.png")
 plt.show()
 plt.close()
 

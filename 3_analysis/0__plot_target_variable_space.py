@@ -20,7 +20,7 @@ if not os.path.exists(output_folder):
 for perc in [0.5, 0.9]:
     
     # read data ===============================================================
-    csv = pd.read_csv(f"/home/silvia/repos/predicting_fixation/1_datasets/simulation_results/processed_data_simcomms_{perc}_full_jun")
+    csv = pd.read_csv(f"/home/silvia/repos/predicting_fixation/1_datasets/simulation_results/processed_data_simcomms_{perc}_full_jul")
     
     prefix = str(decimal.Decimal(perc*100)) + "%_"
     
