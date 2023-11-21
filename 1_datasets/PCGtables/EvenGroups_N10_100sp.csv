@@ -1,0 +1,12 @@
+Core	Average	Leaves
+group1	0.1	Leaf1;Leaf2;Leaf3;Leaf4;Leaf5;Leaf6;Leaf7;Leaf8;Leaf9;Leaf10
+group2	0.1	Leaf2;Leaf3;Leaf4;Leaf5;Leaf6;Leaf7;Leaf8;Leaf9;Leaf10;Leaf11
+group3	0.1	Leaf3;Leaf4;Leaf5;Leaf6;Leaf7;Leaf8;Leaf9;Leaf10;Leaf11;Leaf12
+group4	0.1	Leaf4;Leaf5;Leaf6;Leaf7;Leaf8;Leaf9;Leaf10;Leaf11;Leaf12;Leaf13
+group5	0.1	Leaf5;Leaf6;Leaf7;Leaf8;Leaf9;Leaf10;Leaf11;Leaf12;Leaf13;Leaf14
+group6	0.1	Leaf6;Leaf7;Leaf8;Leaf9;Leaf10;Leaf11;Leaf12;Leaf13;Leaf14;Leaf15
+group7	0.1	Leaf7;Leaf8;Leaf9;Leaf10;Leaf11;Leaf12;Leaf13;Leaf14;Leaf15;Leaf16
+group8	0.1	Leaf8;Leaf9;Leaf10;Leaf11;Leaf12;Leaf13;Leaf14;Leaf15;Leaf16;Leaf17
+group9	0.1	Leaf9;Leaf10;Leaf11;Leaf12;Leaf13;Leaf14;Leaf15;Leaf16;Leaf17;Leaf18
+group10	0.1	Leaf10;Leaf11;Leaf12;Leaf13;Leaf14;Leaf15;Leaf16;Leaf17;Leaf18;Leaf19
+100		
