@@ -1,4 +1,4 @@
-def generate_PCGtable(N, Av, L=None, LN=None, outfile=None):
+def generate_PCGtable(N, Av, L=None, LN=None, outfile=None, seed=None):
     """
     Generate a table with N rows, where each row represents a group with an
     average value and a number of leaves.
@@ -15,6 +15,7 @@ def generate_PCGtable(N, Av, L=None, LN=None, outfile=None):
             value is None.
         outfile (str, optional): Output file path. If provided, the generated table
             will be saved in CSV format at the specified location. Default value is None.
+        seed (int, optional): Random seed. Default value is None.
 
     Returns:
         list of lists: A list of N+1 lists, where each list represents a row in the
@@ -57,7 +58,9 @@ def generate_PCGtable(N, Av, L=None, LN=None, outfile=None):
     
     import random
     import csv
-
+    
+    if seed is not None:
+        random.seed(seed)
     if L is None:
         if LN is None:
             raise ValueError("Either L or LN argument must be provided.")
