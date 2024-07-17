@@ -8,7 +8,7 @@ def generate_PCGtable(N, Av, L=None, LN=None, outfile=None, seed=None):
         Av (list of floats): List of niche sizes (size for each group). The length
             of the list must be equal to N, and the values must sum to 1.
         L (list of ints, optional): List of number of leaves for each group. If this
-            argument is provided, it takes precedence over the L argument. Default value
+            argument is provided, it takes precedence over the LN argument. Default value
             is None.
         LN (int, optional): Total number of leaves. If this argument is provided,
             the number of leaves for each group will be randomly generated. Default
