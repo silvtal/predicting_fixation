@@ -23,8 +23,6 @@
 ### other community types (unlike the rhizosohere script)
 
 ################################################################################
-
-library(stringr)
 library(tidyverse)
 library(gridExtra)
 library(parallel)
@@ -109,7 +107,6 @@ read_simul_data <- function(simuls_folder, num_of_samples) {
     ))
   }) %>% t %>% as_tibble()
 }
-
 
 # parsing of filenames is different...
 read_simul_data_groups <- function(simuls_folder, num_of_samples) {
