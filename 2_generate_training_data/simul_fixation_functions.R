@@ -44,21 +44,23 @@ create_processed_data <- function (metadata, fixation_threshold,
   ###---------------------------------------------------------------------------
   ## it's important to sort the dataset by transfer, if it's not sorted already
   processed_metadata <- metadata %>% arrange(transfer)
-  
+
   ## Read each table of replicates
   ## Rows: OTUs; Columns: replicate
   ## Each element in tmp is a df of replicates of a given sample/community.
   ## So this step can be parallelized (a file per core)
   tmp <- mclapply(processed_metadata$filename,
                   FUN=function(n) {
-                    t <- data.table::fread(file = n, header = T, drop = 1) %>%
+                    t <- data.table::fread(file = n, header = T, drop = 1)
+                    tnames <- colnames(t)
+                    t <- t %>%
                       transpose %>%
                       as.data.frame()
-                    rownames(t) <- paste0("otu", 1:nrow(t))
+                    rownames(t) <- tnames
                     return(t)
                   }, mc.cores = cores
   )
-  
+
   ## if no PCG table (no groups), $fixated and $perc will be a single value
   #> Parallelization is also possible in this case we can look at each "tmp"
   #> (individual sample with N replicates) separately, since transfer processing
@@ -88,37 +90,67 @@ create_processed_data <- function (metadata, fixation_threshold,
                                           sum(t)/length(t)
                                         }, mc.cores = cores
     )
-    
+
     ## If there's a PCG table,
     ## - $fixated and $perc will be a vector of values
     ## - we add the extra variable $group_sizes
     ## [FIX] Also, parallelization is not possible here because the value of NA is
-    ## ambiguous (means either extinction or fixation!) and each transfer depends
-    ## on the previous one. We can however parallelize group processing (1 group
-    ## -> 1 core)
+    ## ambiguous (probably means fixation but it is wise to check) and each transfer
+    ## depends on the previous one. We can however parallelize group processing (1
+    ## group -> 1 core)
   } else {
+    ## [$group_sizes]
+    #> does NOT include revisions from the next loop
+    #> (better to just say NA)
+    processed_metadata$group_sizes <- mclapply(tmp, function(t) {
+      mclapply(pcg_info$Core, FUN=function(g) {
+        ## For each group, take note of its OTUs
+        otus <- unlist(
+          strsplit(as.character(pcg_info[grep(g, pcg_info$Core), "Leaves"]), ";")
+        )
+        ## Take note of their abundance in every instance
+        ## When it's NA, it's because all OTUs are set to NA.
+        apply(t[otus,,drop=F], 2, sum)
+      }, mc.cores = 1
+      ) %>% do.call(cbind, .) %>% apply(., MARGIN = 1, function(x) toString(as.list(x)))
+    }, mc.cores = cores #> We parallelize this sum but use a loop later to access this field
+    )
+
     ## [$fixated]
     ## For each tmp data.frame we'll return a string of comma-separated values.
     ## Each value indicates if fixation has been reached by each group in that
     ## sample and transfer.
-    # [FIX] there's a warning if not initialised ---> processed_metadata$fixated
+    # [FIX] there's a warning every first cycle bc not initialised ---> processed_metadata$fixated
     for (ti in 1:length(tmp)) {
       # First we normalize the abundances
       tmp[[ti]] <- sweep(tmp[[ti]], 2,colSums(tmp[[ti]]), `/`)
       #> after the first dilution, we could have NAs (either from fixation or
-      #> from extinction) so we keep an eye open
-      NAs <- is.na(colSums(tmp[[ti]]))
-      if (sum(NAs) != 0) {
+      #> from an error) so we keep an eye open
+      NAs <- is.na(colSums(tmp[[ti]])) %>% which %>% names
+      if (length(NAs) > 0) {
         ## If we encounter NA values in any replicate we will need to check the
         ## previous cycle for that replicate
         if (ti == 1) {
           #> The first cycle should never has NAs
           stop(paste0("Found 'NA' abundance in initial community: ", processed_metadata$filename[[ti]]), ". NAs in replicate(s): ", paste(which(NAs), collapse = ", "))
         }
+        #> (Some error handling:)
         #> Each NA replicate's abundances will be replaced by the ones from the
         #> previous cycle. If the previous cycle reached fixation, it will be
-        #> recorded as such.
-        tmp[[ti]][NAs] <- tmp[[ti-1]][NAs]
+        #> recorded as such. Else, however, there was some kind of error and the
+        #> replicate will be excluded, with a warning.
+        fixated_prev_cycle <- apply(processed_metadata[ti-1, ]$fixated[[1]], 1, function(x){all(x)}) %>% which %>% names
+        fixated_NAs <- NAs[NAs %in% fixated_prev_cycle]
+        #> Replace the NAs with the values from the previous cycle if possible
+        non_fixated_NAs <- NAs[!(NAs %in% fixated_prev_cycle)]
+        if (length(fixated_NAs) > 0) {
+          tmp[[ti]][fixated_NAs] <- tmp[[ti-1]][fixated_NAs]
+        }
+        if (length(non_fixated_NAs) > 0) {
+          #> Remove the samples that are NA but not because of previous fixation
+          tmp[[ti]] <- tmp[[ti]][!(colnames(tmp[[ti]]) %in% non_fixated_NAs)]
+          warning(paste0("Will exclude sample(s) ",  paste(non_fixated_NAs, collapse = ", "), " because of apparent missing files (NA values but no previous fixation)"))
+        }
       }
       #> (The rest of the code in the loop is run either with NA-correction or
       #> without)
@@ -130,41 +162,22 @@ create_processed_data <- function (metadata, fixation_threshold,
           )
           #> (2) Check if group g has reached fixation
           #> At least one OTU needs to have an abundance of <threshold> %
-          return(apply(tmp[[ti]][otus, ], 2, function(x) any(x >= fixation_threshold)))
+          return(apply(tmp[[ti]][otus,,drop=F], 2, function(x) any(x >= fixation_threshold))) #> drop=F for the case of just one replicate.
         }, mc.cores = cores
         )
       # Final formatting
       processed_metadata$fixated[[ti]] <- group_df %>% #> ((as a note, the first df will be copied into all fields when ti=1, and then it will be overwritten))
         do.call(cbind, .)
+
+      ## [$perc]
+      #> Has to be done separately for each group / column
+      #> Each row is a transfer cycle, but the values won't necessarily increase from row to row.
+      #> Species can randomly become "disfixated" since they are in constant (random) competition.
+      processed_metadata$perc[[ti]] <- processed_metadata$fixated[[ti]] %>% apply(., 2, #> ((same here))
+                         FUN=function(df){
+                           sum(df)/length(df)
+                         }) %>% as_tibble() %>% transpose()
     }
-    ## [$perc]
-    #> Has to be done separately for each group / column
-    #> Each row is a transfer cycle, so the values will increase from row to row
-    processed_metadata$perc <- mclapply(processed_metadata$fixated,
-                                        function(group_df) {
-                                          # $perc
-                                          return(group_df %>% apply(., 2,
-                                                                    FUN=function(df){
-                                                                      sum(df)/length(df)
-                                                                    }) %>% as_tibble() %>% transpose()
-                                          )
-                                        }, mc.cores = cores
-    )
-    ## [$group_sizes]
-    #> includes revisions from the previous loop
-    processed_metadata$group_sizes <- mclapply(tmp, function(t) {
-      mclapply(pcg_info$Core, FUN=function(g) {
-        ## For each group, take note of its OTUs
-        otus <- unlist(
-          strsplit(as.character(pcg_info[grep(g, pcg_info$Core), "Leaves"]), ";")
-        )
-        ## Take note of their abundance in every instance
-        ## When it's NA, it's because all OTUs are set to NA.
-        apply(t[otus, ], 2, sum)
-      }, mc.cores = 1
-      ) %>% do.call(cbind, .) %>% apply(., MARGIN = 1, function(x) toString(as.list(x)))
-    }, mc.cores = cores #> We parallelize this sum but use a loop later to access this field
-    )
   }
   rm(tmp)
   return(processed_metadata) # processed_data[[sa]]
@@ -192,7 +205,7 @@ get_diffs_and_fixpoints <- function(sample_info, reached_fix) {
   diffs <- c()
   all_fixation_points <- c()
   names_all_points <- c()
-  
+
   for (sa in names(sample_info)) {
     corenames <- reached_fix[[sa]] %>% names
     for (core in corenames) { # in the case there are multiple columns (like when
@@ -206,7 +219,7 @@ get_diffs_and_fixpoints <- function(sample_info, reached_fix) {
     }
     all_fixation_points <- c(all_fixation_points, reached_fix[[sa]])
   }; names(all_fixation_points) <- names_all_points
-  
+
   return(list(diffs, all_fixation_points))
 }
 
@@ -221,7 +234,7 @@ get_diffs_and_fixpoints_all_dils <- function(sample_info, reached_fix) {
   diffs <- c()
   all_fixation_points <- c()
   names_all_points <- c()
-  
+
   for (sa in names(sample_info)) {
     for (c in 1:length(reached_fix[[sa]])) { # !!
       corenames <- reached_fix[[sa]][[c]] %>% names # !!
@@ -236,7 +249,7 @@ get_diffs_and_fixpoints_all_dils <- function(sample_info, reached_fix) {
       }
       all_fixation_points <- c(all_fixation_points, reached_fix[[sa]][[c]]) # !!
     }; names(all_fixation_points) <- names_all_points
-    
+
     return(list(diffs, all_fixation_points))
   }
 }
@@ -293,7 +306,7 @@ plot_fixation_perc_v_transferN <- function(processed_data, sa, percN,
     xlab("Transfer") + ylab("Perc simuls which reached fixation") +
     ylim(0, 1) + theme(plot.title = element_text(hjust = 0.5),
                        plot.subtitle = element_text(hjust = 0.5))
-  
+
   if (!is.null(scale)) {
     b <- b + scale_color_manual(values=scale)
   }
@@ -315,7 +328,7 @@ plot_abundiff_v_fixationpoint <- function(diffs, all_fixation_points,
     xlab("Abundance gap between top 2 OTUs") +
     ylab("Perc simuls which reached fixation") +
     labs(color="Core")
-  
+
   if (!is.null(scale)) {
     d <- d + scale_color_manual(values=scale)
   }
@@ -336,7 +349,7 @@ plot_dilfact_v_fixation <- function(dflist, fixation_points,
     ylab(paste0("Transfer where ",fixation_threshold, " fixation is reached (--> faster fixation)")) +
     labs(color="Core") +
     scale_x_continuous(trans=reverselog_trans(10), labels = function(x) sprintf("%.5f", x))
-  
+
   if (!is.null(scale)) {
     e <- e + scale_color_manual(values=scale)
   }
@@ -361,7 +374,7 @@ plot_initabund_v_fixation <- function(initabund, fix_points,
     xlab("Initial abundance") +
     ylab(paste0("% simuls with ", ytitle, " fixation (--> faster fixation)")) +
     labs(color="Core")
-  
+
   if (!is.null(scale)) {
     g <- g + scale_color_manual(values=scale)
   }
@@ -381,7 +394,7 @@ plot_fixation_vs_evenness <- function(evenness, fix_points,
     ylab(paste0("Transfer where ", ytitle, " fixation is reached (--> faster fixation)")) +
     labs(color="Core") +
     scale_x_continuous(labels = function(x) sprintf("%.5f", x))
-  
+
   if (!is.null(scale)) {
     h <- h + scale_color_manual(values=scale)
   }
