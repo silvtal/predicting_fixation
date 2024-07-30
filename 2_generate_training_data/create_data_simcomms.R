@@ -49,7 +49,7 @@ parser <- OptionParser(option_list = list(
 # threshold, the portion of simulations to be checked for fixation, and the
 # number of cores to be used. It also defines the output folder and the output
 # name based on the input directory and the fixation threshold.
-fixation_threshold <- opt$fixation_threshold 
+fixation_threshold <- opt$fixation_threshold
 
 ## input
 cores <- opt$cores
@@ -89,7 +89,7 @@ read_simul_data <- function(simuls_folder, num_of_samples) {
                                          full.names = TRUE)
     )
   }
-  
+
   simul_data <- mapply(filenames, FUN=function(full_name) {
     last_dir <- tail(strsplit(dirname(full_name), "/")[[1]], 1)
     name  <- paste(last_dir, basename(full_name), sep = "/")
@@ -222,13 +222,26 @@ for (sa in unique(names(all_processed_data))) {
                                                                                          "dilfactor",
                                                                                          "transfer",
                                                                                          "size",
-                                                                                         "filename")]
+                                                                                         "filename",
+                                                                                         "group_sizes")]
     successes <- record_success(selec, percN, groups=!is.null(pcgtable))
-    
+
     # final_size
     metadata[metadata$sample==sa &
                metadata$dilfactor==df,]$final_size <- selec[selec$transfer==1,]$size
-    
+
+    # group_sizes (to check for extinction later; the last non-NA group sizes are saved)
+    df <- selec$group_sizes %>%
+      data.frame() %>%
+      mutate(result = apply(df, 1, function(row) {
+        # Get the last value in the row that does not include "NA" substring
+        non_na_values <- row[!grepl("NA", row)]
+        last_non_na <- tail(non_na_values, 1)
+        if (length(last_non_na) == 0) NA else last_non_na
+      }))
+    metadata[metadata$sample==sa &
+               metadata$dilfactor==df,]$group_sizes <- df$result
+
     # group_success
     if (!is.null(pcgtable)) {
       metadata[metadata$sample==sa &
@@ -238,14 +251,14 @@ for (sa in unique(names(all_processed_data))) {
     #             reach fixation (in percN of simulations)
     metadata[metadata$sample==sa &
                metadata$dilfactor==df,]$success <- max(successes)
-    
+
     # absolute abundances (initial)
     abs_ab <- data.table::fread(selec[selec$transfer==0,]$filename[[1]],
                                 header = T,
                                 drop = 1,
                                 nrows = 1) %>% as_tibble()
     rel_ab <- abs_ab/selec[selec$transfer==0,]$size # initial size
-    
+
     metadata[metadata$sample==sa & metadata$dilfactor==df,]$evenness     <- pielou(abs_ab)
     metadata[metadata$sample==sa & metadata$dilfactor==df,]$shannon  <- vegan::diversity(abs_ab)
     metadata[metadata$sample==sa & metadata$dilfactor==df,]$gini         <- Gini(abs_ab)
