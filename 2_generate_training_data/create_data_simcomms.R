@@ -206,6 +206,7 @@ metadata <- metadata[metadata$transfer==0,]
 message("Computing diversity measures..")
 if (!is.null(pcgtable)) {
   metadata$group_success <- NA
+  metadata$group_sizes   <- list()
 }
 metadata$success <- NA
 
@@ -217,8 +218,8 @@ metadata$shannon <- NA
 metadata$gini <- NA
 
 for (sa in unique(names(all_processed_data))) {
-  for (df in unique(all_processed_data[[sa]]$dilfactor)) {
-    selec <- all_processed_data[[sa]][unlist(all_processed_data[[sa]]$dilfactor)==df,][c("perc",
+  for (d in unique(all_processed_data[[sa]]$dilfactor)) {
+    selec <- all_processed_data[[sa]][unlist(all_processed_data[[sa]]$dilfactor)==d,][c("perc",
                                                                                          "dilfactor",
                                                                                          "transfer",
                                                                                          "size",
@@ -228,29 +229,29 @@ for (sa in unique(names(all_processed_data))) {
 
     # final_size
     metadata[metadata$sample==sa &
-               metadata$dilfactor==df,]$final_size <- selec[selec$transfer==1,]$size
+               metadata$dilfactor==d, "final_size"] <- selec[selec$transfer==1, "size"]
 
     # group_sizes (to check for extinction later; the last non-NA group sizes are saved)
     df <- selec$group_sizes %>%
       data.frame() %>%
-      mutate(result = apply(df, 1, function(row) {
+      mutate(result = apply(., 1, function(row) {
         # Get the last value in the row that does not include "NA" substring
         non_na_values <- row[!grepl("NA", row)]
         last_non_na <- tail(non_na_values, 1)
         if (length(last_non_na) == 0) NA else last_non_na
       }))
-    metadata[metadata$sample==sa &
-               metadata$dilfactor==df,]$group_sizes <- df$result
+    metadata[metadata$sample==sa &              
+                 metadata$dilfactor==d, "group_sizes"] <- (df$result %>% paste(collapse = ";"))
 
     # group_success
     if (!is.null(pcgtable)) {
       metadata[metadata$sample==sa &
-                 metadata$dilfactor==df,]$group_success <- successes %>% paste(collapse = ";")
+                 metadata$dilfactor==d, "group_success"] <- successes %>% paste(collapse = ";")
     }
     # success ==> if there are multiple groups, it happens when all the groups
     #             reach fixation (in percN of simulations)
     metadata[metadata$sample==sa &
-               metadata$dilfactor==df,]$success <- max(successes)
+               metadata$dilfactor==d, "success"] <- max(successes)
 
     # absolute abundances (initial)
     abs_ab <- data.table::fread(selec[selec$transfer==0,]$filename[[1]],
@@ -259,9 +260,9 @@ for (sa in unique(names(all_processed_data))) {
                                 nrows = 1) %>% as_tibble()
     rel_ab <- abs_ab/selec[selec$transfer==0,]$size # initial size
 
-    metadata[metadata$sample==sa & metadata$dilfactor==df,]$evenness     <- pielou(abs_ab)
-    metadata[metadata$sample==sa & metadata$dilfactor==df,]$shannon  <- vegan::diversity(abs_ab)
-    metadata[metadata$sample==sa & metadata$dilfactor==df,]$gini         <- Gini(abs_ab)
+    metadata[metadata$sample==sa & metadata$dilfactor==d,]$evenness     <- pielou(abs_ab)
+    metadata[metadata$sample==sa & metadata$dilfactor==d,]$shannon  <- vegan::diversity(abs_ab)
+    metadata[metadata$sample==sa & metadata$dilfactor==d,]$gini         <- Gini(abs_ab)
   }
 }
 

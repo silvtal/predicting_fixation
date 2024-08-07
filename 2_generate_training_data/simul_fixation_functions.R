@@ -133,23 +133,25 @@ create_processed_data <- function (metadata, fixation_threshold,
         if (ti == 1) {
           #> The first cycle should never has NAs
           stop(paste0("Found 'NA' abundance in initial community: ", processed_metadata$filename[[ti]]), ". NAs in replicate(s): ", paste(which(NAs), collapse = ", "))
-        }
-        #> (Some error handling:)
-        #> Each NA replicate's abundances will be replaced by the ones from the
-        #> previous cycle. If the previous cycle reached fixation, it will be
-        #> recorded as such. Else, however, there was some kind of error and the
-        #> replicate will be excluded, with a warning.
-        fixated_prev_cycle <- apply(processed_metadata[ti-1, ]$fixated[[1]], 1, function(x){all(x)}) %>% which %>% names
-        fixated_NAs <- NAs[NAs %in% fixated_prev_cycle]
-        #> Replace the NAs with the values from the previous cycle if possible
-        non_fixated_NAs <- NAs[!(NAs %in% fixated_prev_cycle)]
-        if (length(fixated_NAs) > 0) {
-          tmp[[ti]][fixated_NAs] <- tmp[[ti-1]][fixated_NAs]
-        }
-        if (length(non_fixated_NAs) > 0) {
-          #> Remove the samples that are NA but not because of previous fixation
-          tmp[[ti]] <- tmp[[ti]][!(colnames(tmp[[ti]]) %in% non_fixated_NAs)]
-          warning(paste0("Will exclude sample(s) ",  paste(non_fixated_NAs, collapse = ", "), " because of apparent missing files (NA values but no previous fixation)"))
+        } else {
+          
+          #> (Some error handling:)
+          #> Each NA replicate's abundances will be replaced by the ones from the
+          #> previous cycle. If the previous cycle reached fixation, it will be
+          #> recorded as such. Else, however, there was some kind of error and the
+          #> replicate will be excluded, with a warning.
+          fixated_prev_cycle <- apply(processed_metadata[ti-1, ]$fixated[[1]], 1, function(x){all(x)}) %>% which %>% names
+          fixated_NAs <- NAs[NAs %in% fixated_prev_cycle]
+          #> Replace the NAs with the values from the previous cycle if possible
+          non_fixated_NAs <- NAs[!(NAs %in% fixated_prev_cycle)]
+          if (length(fixated_NAs) > 0) {
+            tmp[[ti]][fixated_NAs] <- tmp[[ti-1]][fixated_NAs]
+          }
+          if (length(non_fixated_NAs) > 0) {
+            #> Remove the samples that are NA but not because of previous fixation
+            tmp[[ti]] <- tmp[[ti]][!(colnames(tmp[[ti]]) %in% non_fixated_NAs)]
+            warning(paste0("Will exclude sample(s) ",  paste(non_fixated_NAs, collapse = ", "), " because of apparent missing files (NA values but no previous fixation)"))
+          }
         }
       }
       #> (The rest of the code in the loop is run either with NA-correction or
