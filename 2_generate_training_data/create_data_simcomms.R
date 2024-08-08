@@ -159,6 +159,8 @@ if (!is.null(pcgtable)) {
   simul_data <- read_simul_data(simuls_folder, num_of_samples)
 }
 
+message(paste("INPUT:", simuls_folder))
+
 message(paste0("Read data!
 ----------
 nrow>> ", nrow(simul_data), "
@@ -237,6 +239,11 @@ for (sa in unique(names(all_processed_data))) {
       mutate(result = apply(., 1, function(row) {
         # Get the last value in the row that does not include "NA" substring
         non_na_values <- row[!grepl("NA", row)]
+        # ---> there are 2 options: all NA or no NA. If only some elements are NA,
+        # there's a problem with the groups
+        if (ncol(non_na_values)){
+          warning(paste0("There are NAs in the group_sizes since transfer 0. Something wrong with the groups or the simulations. (", simuls_folder, ")"))
+        }
         last_non_na <- tail(non_na_values, 1)
         if (length(last_non_na) == 0) NA else last_non_na
       }))

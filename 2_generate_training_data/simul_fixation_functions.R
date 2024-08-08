@@ -106,7 +106,7 @@ create_processed_data <- function (metadata, fixation_threshold,
       mclapply(pcg_info$Core, FUN=function(g) {
         ## For each group, take note of its OTUs
         otus <- unlist(
-          strsplit(as.character(pcg_info[grep(g, pcg_info$Core), "Leaves"]), ";")
+          strsplit(as.character(pcg_info[pcg_info$Core == g, "Leaves"]), ";")
         )
         ## Take note of their abundance in every instance
         ## When it's NA, it's because all OTUs are set to NA.
