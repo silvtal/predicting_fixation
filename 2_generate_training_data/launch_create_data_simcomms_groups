@@ -19,7 +19,8 @@
 ##                 "SIMCOMM_SIMS_0.8_uniform_10000_sp_10_9/simul_9_t_86.csv"
 ##                                 3       4     5     7 8           1
 
-perc=0.9 # percentage of simulations with fixation needed for success
+perc=0.95 # percentage of simulations with fixation needed for success
+fixT=0.9 # relative abundance needed for a species to be considered fixated 
 n=30     # number of unique samples for each community type
 input_folder=../../results_null_model/simcomms_WITH_GROUPS_2023-11-27
 output_folder=../../results_null_model/parsed_results_GROUPS_$perc
@@ -55,7 +56,7 @@ do
             ## PCGtable is chosen; run script
             echo "launching script for ../results_null_model/SIMCOMM_SIMS_"$g"_"$nichedist"_"$fdil"_"$distrib"_"$size"_sp_"$sp"(...)"
             echo -e \#\!/bin/bash > temp
-            echo "~/R-4.0.5/bin/Rscript create_data_simcomms.R --input "$input_folder"/SIMCOMM_SIMS_"$g"_"$nichedist"_"$fdil"_"$distrib"_"$size"_sp_"$sp"_ --output_folder "$output_folder" -n "$n" -p "$pcgtable" -s "$perc" -c "$cores >> temp
+            echo "~/R-4.0.5/bin/Rscript create_data_simcomms.R --input "$input_folder"/SIMCOMM_SIMS_"$g"_"$nichedist"_"$fdil"_"$distrib"_"$size"_sp_"$sp"_ --output_folder "$output_folder" -n "$n" -p "$pcgtable" -f "$fixT" -s "$perc" -c "$cores >> temp
             sbatch -A microbioma_serv -p biobis temp
             rm temp
         done

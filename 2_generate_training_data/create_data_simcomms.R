@@ -38,9 +38,9 @@ parser <- OptionParser(option_list = list(
   make_option(c("-p", "--pcgtable"), type="character", default=NULL),
   make_option(c("-c", "--cores"), type="integer", default=NULL),
   make_option(c("-f", "--fixation_threshold"), type="double", default=0.5,
-              help = "Portion of simulations to be checked for fixation; 0.5 (50%) by default"),
+              help = "Abundance needed for a species to be considered fixated; 0.5 (50%) by default"),
   make_option(c("-s", "--successperc"), type="double", default=0.95,
-              help = "Used to define 'success' within a transfer for a sample. Success is considered to have happened when fixation is reached at percN*100% of simulations for that sample and transfer.")
+              help = "Percentage of simulations needed to consider a sample as successful. Success is considered to have happened when fixation is reached at percN*100% of simulations for that sample and transfer.")
 )
 ); opt <- parse_args(parser)
 
