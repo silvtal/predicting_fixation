@@ -81,7 +81,7 @@ create_processed_data <- function (metadata, fixation_threshold,
                                              # the $fixation field will be set to T later
                                              apply(t, 2, function(x) any(x >= fixation_threshold))
                                            }, mc.cores = cores
-    ) %>% do.call(cbind, .)
+    )
     ## [$perc]
     ## % of simulations that reached the fixation goal at that transfer
     ## i.e., how many communities surpass fixation_threshold
