@@ -28,11 +28,20 @@ simulate_log_normal_community <- function(num_species=10,
                                           meanlog = 0,
                                           sdlog = 1) {
   # https://www.nature.com/scitable/knowledge/library/explaining-general-patterns-in-species-abundance-and-23162842/
+  # Even if you request 1000 species, because of the lognormal nature it's possible that some species have 0 abundance.
+  # To avoid this, we sum 1 to every species, The total will still adjusted to comm_size.
+  if (num_species > comm_size) {stop("richness > community size!")}
+  all_species <- paste0(name, 1:num_species)
   table(
-    sample(x = paste0(name, 1:num_species),
+    c(
+      # adjust so every species is present (add each name once)
+      all_species,
+      # actual sampling
+      sample(x = paste0(name, 1:num_species),
            replace = TRUE,
-           size = comm_size,
+           size = comm_size - num_species, #> so we do not exceed comm_size !
            prob = stats::rlnorm(n = num_species, meanlog = 0, sdlog = 1))
+    )
   )
 }
 
@@ -103,7 +112,7 @@ comm_size <- c(10**4)
 # num_winners <- c(1, 2, 3, 5, 8, 10)
 # fold <- c(1.5, 2, 3, 5, 10)
 
-outputdir <- "~/AAA/2023-02-01_initial_community_simulation/simcomms_2"
+outputdir <- "~/AAA/2023-02-01_initial_community_simulation/simcomms"
 if (!file.exists(outputdir)) {system(paste("mkdir -p", outputdir))}
 
 ## =============================================================================
@@ -168,20 +177,28 @@ for (ns in num_species) {
 ## =============================================================================
 ## Log-normal
 ## =============================================================================
-simcomms <- c()
 for (ns in num_species) {
+  simcomms <- c()
   for (cs in comm_size) {
     s <- 0
     while (s < total_samples_u) {
       s <- s + 1
+      # simcomms <- rbind(simcomms, # NOTE : column names might not match for R < 3.5.2
+      #                   # not super important
+      #                   simulate_log_normal_community2(num_species = ns,
+      #                                                  comm_size = cs,
+      #                                                  name = "otu",
+      #                                                  meanlog = 0,
+      #                                                  sdlog = 1,
+      #                                                  plot=TRUE)
+      #                   )
       simcomms <- rbind(simcomms, # NOTE : column names might not match for R < 3.5.2
                         # not super important
-                        simulate_log_normal_community2(num_species = 100,
-                                                       comm_size = 1000000,
-                                                       name = "otu",
-                                                       meanlog = 0,
-                                                       sdlog = 1,
-                                                       plot=TRUE)
+                        simulate_log_normal_community(num_species = ns,
+                                                      comm_size = cs,
+                                                      name = "otu",
+                                                      meanlog = 0,
+                                                      sdlog = 1)
                         )
       message(paste0("Created log-normal simcomm #", s))
     }
@@ -190,7 +207,6 @@ for (ns in num_species) {
                 col.names = NA,
                 paste0(outputdir, "/lognorm_", ns,"sp_", "size", cs, ".tsv")
     )
-    simcomms <- c()
   }
 }
 
