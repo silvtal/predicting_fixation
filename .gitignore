@@ -21,3 +21,7 @@
 /figures/2__GLM_failure/GLM_failure.RData
 /figures/2__GLM_failure/*.mp4
 /figures/0__target_variable_space/Combined
+/2_generate_training_data/create_data_simcomms_Gini.R
+/1_datasets/simulation_results/preparsed
+/3_analysis/g_plot_results_facet_by_dil_PARTS.r
+/3_analysis/debug

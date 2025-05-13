@@ -20,7 +20,7 @@ import matplotlib.markers as mmarkers
 import matplotlib.colors as mcolors
 from matplotlib import colormaps as cmaps
 
-output_folder = "~/predicting_fixation/figures_groups/0__target_variable_space/"
+output_folder = "~/repos/predicting_fixation/figures_groups/0__target_variable_space/"
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
@@ -28,7 +28,7 @@ perc = 0.5
 mydilfactors = [0.00025, 0.0005, 0.001, 0.0025, 0.004, 0.005, 0.008, 0.025]
 
 # read data ===============================================================
-csv = pd.read_csv(f"~/predicting_fixation/1_datasets/simulation_results/processed_data_simcomms_{perc}_groups.csv", encoding = "UTF-8")
+csv = pd.read_csv(f"~/repos/predicting_fixation/1_datasets/simulation_results/processed_data_simcomms_{perc}_groups.csv", encoding = "UTF-8")
 mydilfactors = csv.dilfactor.unique() # DEBUG
 
 prefix = str(decimal.Decimal(perc*100)) + "%_"

@@ -102,6 +102,7 @@ create_processed_data <- function (metadata, fixation_threshold,
     ## [$group_sizes]
     #> does NOT include revisions from the next loop
     #> (better to just say NA)
+    # TODO - create a warning for when otu names are missing (incomplete tables)
     processed_metadata$group_sizes <- mclapply(tmp, function(t) {
       mclapply(pcg_info$Core, FUN=function(g) {
         ## For each group, take note of its OTUs
