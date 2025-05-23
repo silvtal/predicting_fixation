@@ -118,39 +118,40 @@ for (INTER_FOLDER in INTER_FOLDERS) {
                                              (df_summary_i$nicheN == nicheNvalue) &
                                              (df_summary_i$richness == richnessvalue)), ] %>%
       mutate(nicheN = as.factor(nicheN)) %>%
-      mutate(group_number = as.numeric(group_number)) 
+      mutate(group_number = as.numeric(group_number)) %>%
+      # Renombrar columnas para el ploteo
+      rename(
+        "Presencia interacciones" = "Interaction_presence",
+        "Signo interacciones" = "Interaction_sign",
+        "Valor interacciones" = "Interaction_value"
+      )
     
-    # plots[[nichedistvalue]] <- ggplot(df_summary_filtered, aes(x = group_number, y = mean_success, color = as.factor(nicheN))) +
-    p <- ggplot(df_summary_filtered_i, aes(x = group_number, y = mean_success, color = as.factor(Interaction_value), group = Interaction_value)) +  # next
+    p <- ggplot(df_summary_filtered_i, aes(x = group_number, y = mean_success, color = as.factor(`Valor interacciones`), group = `Valor interacciones`)) +  # next
       geom_line(linewidth = .3) +
       geom_point(size = 1) +
-      labs(title = paste(INTER_FOLDER, dilfactorvalue),
+      labs(
+          # title = paste("Tasa de éxito por grupo -", 
+          #               ifelse(nichedistvalue == "SkewedGroups", "Tamaño de grupo heterogéneo", "Tamaño de grupo homogéneo"),
+          #               "N", nicheNvalue, "-", richnessvalue, "especies\nFactor de dilución:", dilfactorvalue),
            x = "Número de grupo",
-           y = "Tasa de éxito (%) / abundancia relativa",
+           y = "Tasa de éxito (%)",
            color = "Valor de la interacción") +
       theme_minimal() +
       facet_grid(
-        rows = vars(Interaction_presence),
-        cols = vars(Interaction_sign),
+        rows = vars(`Presencia interacciones`),
+        cols = vars(`Signo interacciones`),
         axis.labels = "all",
-        labeller = label_both # otros: label:both
-        # facet_wrap(
-        # Interaction_presence + Interaction_sign ~ ., # TODO si hubiera Mutual, se pondría aquí.
+        labeller = label_both
       ) +
       coord_cartesian(ylim = c(0, 100)) +
-      # theme(legend.position = "bottom") +
       theme(
         legend.position = "bottom",
-        panel.grid.major = element_line(color = "lightgray", size = 0.25),  # Major grid lines
-        panel.grid.minor = element_line(color = "gray90", size = 0.1)    # Minor grid lines
+        panel.grid.major = element_line(color = "lightgray", size = 0.25),
+        panel.grid.minor = element_line(color = "gray90", size = 0.1),
+        plot.title = element_text(hjust = 0.5, size = 12)
       ) +
-      # scale_color_brewer(palette = "Paired", direction = -1) # https://www.datanovia.com/en/wp-content/uploads/dn-tutorials/ggplot2/figures/029-r-color-palettes-rcolorbrewer-palettes-1.png
-      # scale_color_manual(values = c("#A6CEE3", "#B2DF8A", "#1F78B4", "#33A02C", "#FB9A99", "#FDBF6F", "#E31A1C", "#FF7F00"))
-      # scale_color_brewer(palette = "Set1") +
-      # scale_color_manual("#A1D99B", "#74C476", "#41AB5D", "#238B45", "#006D2C", "#00441B") +
       scale_color_manual(values = case_scale) +
-      scale_x_continuous(breaks = function(x) seq(0, max(x), by = 1)) + # Solo números naturales hasta nicheN
-      # añado sin inter:  
+      scale_x_continuous(breaks = function(x) seq(0, max(x), by = 1)) +
       geom_point(data = df_summary_filtered, aes(x = group_number, y = mean_success), size = 1, inherit.aes = F) +
       geom_line(data = df_summary_filtered, aes(x = group_number, y = mean_success), size = .5, inherit.aes = F)
     

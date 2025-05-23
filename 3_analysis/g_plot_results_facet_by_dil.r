@@ -378,10 +378,25 @@ my_other_var <- "dilution_factor"
 all_information[["dilution_factor"]] <- as.factor(all_information[["dilution_factor"]])
 all_information[["comm_number"]]     <- as.factor(all_information[["comm_number"]])
 
+# Diccionario de traducción para los nombres de las variables
+var_traduccion <- c(
+  num_groups = "Nº de grupos",
+  group_distribution = "Distribución de grupos",
+  richness = "Riqueza",
+  dilution_factor = "Factor de dilución",
+  comm_number = "Comunidad"
+)
+
 # ==============================================================================
 # Generar los gráficos
 for (ctype in unique(all_information$community_type)) {
   success_rates_ctype <- all_information[(all_information$community_type == ctype), ]
+  # Definir título personalizado
+  if (my_study_var == "comm_number") {
+    plot_title <- "Tasa de éxito para cada comunidad"
+  } else {
+    plot_title <- paste("Relación entre", ver_traduccion[my_study_var], "y tasa de éxito")
+  }
   grafico <- ggplot(success_rates_ctype, aes(x = !!sym(my_study_var),
                                    y = success_rate,
                                    color = !!sym(my_study_var))) +
@@ -394,21 +409,32 @@ for (ctype in unique(all_information$community_type)) {
     geom_hline(yintercept = 0.9, color = "red") + # shows success threshold
     {if (usar_my_other_var) facet_wrap(as.formula(paste("~", my_other_var))) else NULL} +
     labs(
-      title = paste("Relación entre", my_study_var, "y Success Rate"),
+      title = plot_title,
       subtitle = paste0(
         sapply(my_subtitle_vars, function(var) {
-          paste0(var, ": ", unique(success_rates_ctype[[var]]), ", ")
+          nombre_es <- ifelse(!is.na(var_traduccion[var]), var_traduccion[var], var)
+          paste0(nombre_es, ": ", unique(success_rates_ctype[[var]]), ". ")
         }),
         collapse = ""
       ),
-      x = my_study_var,
-      y = "Success",
-      color = "Community"
+      x = if (my_study_var == "comm_number") {"Comunidad"} else {my_study_var},
+      y = "Tasa de éxito",
+      color = "Comunidad"
     ) +
     theme_minimal() +
     ylim(0, 1) +
-    theme(legend.position = "bottom",
-          axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+    theme(
+      legend.position = "bottom",
+      legend.title = element_text(size = 14),
+      legend.text = element_text(size = 14),
+      axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = 11),
+      axis.text.y = element_text(size = 14),
+      axis.title.x = element_text(size = 22),
+      axis.title.y = element_text(size = 22),
+      plot.title = element_text(size = 22, face = "bold"),
+      plot.subtitle = element_text(size = 18),
+      strip.text = element_text(size = 15) # para los títulos de los subplots (facets)
+    )
   
   ggsave(
     filename = paste0(file.path(output_figure_folder, ctype), ".png"),

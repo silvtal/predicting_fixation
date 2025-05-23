@@ -119,39 +119,118 @@ for (INTER_FOLDER in INTER_FOLDERS) {
                                              (df_summary_i$nicheN == nicheNvalue) &
                                              (df_summary_i$richness == richnessvalue)), ] %>%
       mutate(nicheN = as.factor(nicheN)) %>%
-      mutate(group_number = as.numeric(group_number)) 
+      mutate(group_number = as.numeric(group_number)) %>%
+      # Renombrar columnas para el ploteo
+      rename(
+        "Presencia interacciones" = "Interaction_presence",
+        "Signo interacciones" = "Interaction_sign",
+        "Valor interacciones" = "Interaction_value"
+      )
     
-    # plots[[nichedistvalue]] <- ggplot(df_summary_filtered, aes(x = group_number, y = mean_extinction, color = as.factor(nicheN))) +
-    p <- ggplot(df_summary_filtered_i, aes(x = group_number, y = mean_extinction, color = as.factor(Interaction_value), group = Interaction_value)) +  # next
+    # labels para cuando se solapan
+    # Crear etiquetas en el último punto de cada línea
+    df_labels <- df_summary_filtered_i %>%
+      group_by(`Valor interacciones`, `Presencia interacciones`, `Signo interacciones`) %>%
+      filter(group_number == max(group_number)) %>%
+      ungroup()
+    
+    # Crear el gráfico
+    p <- ggplot(df_summary_filtered_i, aes(
+      x = group_number, 
+      y = mean_extinction, 
+      color = as.factor(`Valor interacciones`),
+      group = `Valor interacciones`)
+    ) +
       geom_line(linewidth = .3) +
       geom_point(size = 1) +
-      labs(title = paste(INTER_FOLDER, dilfactorvalue),
-           x = "Número de grupo",
-           y = "Tasa de extinción (%) / abundancia relativa",
-           color = "Valor de la interacción") +
+      ggrepel::geom_text_repel(
+        data = df_labels,
+        aes(
+          x = group_number,
+          y = mean_extinction,
+          label = `Valor interacciones`,
+          color = as.factor(`Valor interacciones`)
+        ),
+        inherit.aes = FALSE,
+        # direction = "y",         # Solo se repelen verticalmente
+        nudge_x = 0.5,           # Aleja etiquetas hacia la derecha
+        nudge_y = 0.7,           # Añade espacio vertical (opcional)
+        min.segment.length = 0,  # Permite segmentos cortos
+        segment.size = 0.2,      # Grosor de la línea que conecta
+        box.padding = 0.8,       # Espacio alrededor de la etiqueta
+        point.padding = 0.5,     # Espacio mínimo al punto
+        max.overlaps = Inf,      # Mostrar todas
+        size = 3,
+        show.legend = FALSE
+      ) +
+      labs(
+        x = "Número de grupo",
+        y = "Tasa de éxito (%)",
+        color = "Valor de la interacción"
+      ) +
       theme_minimal() +
       facet_grid(
-        rows = vars(Interaction_presence),
-        cols = vars(Interaction_sign),
+        rows = vars(`Presencia interacciones`),
+        cols = vars(`Signo interacciones`),
         axis.labels = "all",
-        labeller = label_both # otros: label:both
-        # facet_wrap(
-        # Interaction_presence + Interaction_sign ~ ., # TODO si hubiera Mutual, se pondría aquí.
+        labeller = label_both
       ) +
-      coord_cartesian(ylim = c(0, 100)) +
-      # theme(legend.position = "bottom") +
+      coord_cartesian(ylim = c(0, 100),
+                      # xlim para que me quepan las labels.
+                      xlim = c(min(df_summary_filtered_i$group_number),
+                               max(df_summary_filtered_i$group_number) + .5)) +
       theme(
         legend.position = "bottom",
-        panel.grid.major = element_line(color = "lightgray", size = 0.25),  # Major grid lines
-        panel.grid.minor = element_line(color = "gray90", size = 0.1),      # Minor grid lines
-        plot.background = element_rect(fill = "gray90")
+        panel.grid.major = element_line(color = "lightgray", size = 0.25),
+        panel.grid.minor = element_line(color = "gray90", size = 0.1),
+        plot.title = element_text(hjust = 0.5, size = 12)
       ) +
       scale_color_manual(values = case_scale) +
-      scale_x_continuous(breaks = function(x) seq(0, max(x), by = 1)) + # Solo números naturales hasta nicheN
-      # añado sin inter:  
-      geom_point(data = df_summary_filtered, aes(x = group_number, y = mean_extinction), size = 1, inherit.aes = F) +
-      geom_line(data = df_summary_filtered, aes(x = group_number, y = mean_extinction), size = .5, inherit.aes = F)
+      scale_x_continuous(breaks = function(x) seq(0, max(x), by = 1)) +
+      geom_point(
+        data = df_summary_filtered,
+        aes(x = group_number, y = mean_extinction),
+        size = 1,
+        inherit.aes = FALSE
+      ) +
+      geom_line(
+        data = df_summary_filtered,
+        aes(x = group_number, y = mean_extinction),
+        size = .5,
+        inherit.aes = FALSE
+      )
     
+    # p <- ggplot(df_summary_filtered_i, aes(x = group_number, y = mean_extinction,
+    #                                        color = as.factor(`Valor interacciones`),
+    #                                        group = `Valor interacciones`)) +  # next
+    #   geom_line(linewidth = .3) +
+    #   geom_point(size = 1) +
+    #   labs(
+    #     title = paste("Tasa de extinción por grupo -", 
+    #                     ifelse(nichedistvalue == "SkewedGroups", "Tamaño de grupo heterogéneo", "Tamaño de grupo homogéneo"),
+    #                     "N", nicheNvalue, "-", richnessvalue, "especies\nFactor de dilución:", dilfactorvalue),
+    #        x = "Número de grupo",
+    #        y = "Tasa de extinción (%)",
+    #        color = "Valor de la interacción") +
+    #   theme_minimal() +
+    #   facet_grid(
+    #     rows = vars(`Presencia interacciones`),
+    #     cols = vars(`Signo interacciones`),
+    #     axis.labels = "all",
+    #     labeller = label_both
+    #   ) +
+    #   coord_cartesian(ylim = c(0, 100)) +
+    #   theme(
+    #     legend.position = "bottom",
+    #     panel.grid.major = element_line(color = "lightgray", size = 0.25),
+    #     panel.grid.minor = element_line(color = "gray90", size = 0.1),
+    #     plot.title = element_text(hjust = 0.5, size = 12)
+    #   ) +
+    #   scale_color_manual(values = case_scale) +
+    #   scale_x_continuous(breaks = function(x) seq(0, max(x), by = 1)) +
+    #   geom_point(data = df_summary_filtered, aes(x = group_number, y = mean_extinction), size = 1, inherit.aes = F) +
+    #   geom_line(data = df_summary_filtered, aes(x = group_number, y = mean_extinction), size = .5, inherit.aes = F)
+
     ggsave(
       filename = paste0(out_folder,"/0g_extinction_per_group_", INTER_FOLDER, "_", dilfactorvalue, ".png"),
       plot = p,

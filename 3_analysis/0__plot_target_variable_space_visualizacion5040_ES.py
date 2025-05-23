@@ -26,7 +26,8 @@ for perc in [0.50, 0.90]:
     prefix = str(decimal.Decimal(perc*100)) + "%_"
     
     csv = csv.dropna() # remove samples that have not even reached fixation in 1000 transfers
-    
+    csv = csv.reset_index(drop=True) #> para que no pete después
+
     # substitute 1.00E+06 with 1000000
     csv = csv.replace(to_replace="1.00E+06", value=100000)
     
@@ -69,11 +70,19 @@ for perc in [0.50, 0.90]:
         h, l, s = colorsys.rgb_to_hls(r, g, b)
         darker_rgb = colorsys.hls_to_rgb(h, max(0, l * 0.6), s)
     
-        color_mapping_bright[string] = (*base_color[:3], 0.8)  # relleno con alpha fijo
+        color_mapping_bright[string] = base_color[:3]  # relleno con alpha fijo
         color_mapping_dark[string] = (*darker_rgb, 1.0)        # borde más oscuro
     
-    colors_bright = [color_mapping_bright[c] for c in csv['combined']]
     colors_edge = [color_mapping_dark[c] for c in csv['combined']]
+    # colors_bright = [color_mapping_bright[c] for c in csv['combined']] # para el alpha fijo
+    grouped = csv.groupby('combined')['dilfactor'] #> como el grouping de R
+    min_dil = grouped.transform('min'); max_dil = grouped.transform('max')
+    normalized_alpha = (csv['dilfactor'] - min_dil) / (max_dil - min_dil + 1e-9) #> Evitar división por cero (si todos los valores de dilfactor son iguales)
+    scaled_alpha = 0.3 + 0.7 * normalized_alpha #> importante: que los alpha estén entre 0.3 y 1.0 para que se vean todos
+    colors_bright = [
+        (*color_mapping_bright[csv.loc[i, 'combined']][:3], scaled_alpha[i]) for i in range(len(csv))
+        
+    ]
 
     legend_elements = []
     for comb in unique_strings:
@@ -81,7 +90,7 @@ for perc in [0.50, 0.90]:
         patch = Patch(color=color, label=comb)
         legend_elements.append(patch)
 
-    plt.figure(figsize=(8.5, 8), dpi=100)
+    plt.figure(figsize=(8.25, 8), dpi=100)
     plt.scatter(
         range(csv.shape[0]),
         csv.success,
@@ -92,17 +101,18 @@ for perc in [0.50, 0.90]:
     )
 
     # plt.title("Replicados de comunidades simuladas (umbral de fijación del " + str(decimal.Decimal(perc*100)) + "%)", fontsize=14)
-    plt.ylabel("Número de ciclos de dilución-crecimiento hasta la fijación", fontsize=13)
+    plt.ylabel("Ciclos de dilución-crecimiento hasta la fijación", fontsize=13)
     plt.xlabel("← Comunidades simuladas →", fontsize=13)
     plt.xticks([])
 
     plt.legend(handles=legend_elements,
     title="Distribución_Tamaño_Riqueza",
     # loc='upper left',
-    bbox_to_anchor=(0.45, -0.2),
-    ncol=4,
+    bbox_to_anchor=(0.48, -0.3),
+    ncol=3,
     loc="lower center",
-    fontsize=9,
+    title_fontsize=13,
+    fontsize=11,
     frameon=True)
     
     plt.tight_layout()

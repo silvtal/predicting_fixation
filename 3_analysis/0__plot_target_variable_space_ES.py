@@ -60,7 +60,7 @@ for perc in [0.50, 0.90]:
                            'shannon',
                            'evenness',
                            'gini']):
-        name = ["Distribución de abundancia", "Tamaño total de la comunidad", "Riqueza", "Factor de dilución", "Diversidad de Shannon", "Homogeneidad de Pielou", "Índice de Gini"][n]
+        name = ["Distribución de abundancias", "Tamaño total de la comunidad", "Riqueza", "Factor de dilución", "Diversidad de Shannon", "Homogeneidad de Pielou", "Índice de Gini"][n]
         
         cmap = None
         mynorm = None
