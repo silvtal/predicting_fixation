@@ -178,30 +178,26 @@ for (nichedistvalue in c("EvenGroups", "SkewedGroups")){
       geom_point(size = 1) +
       geom_hline(yintercept = 100 * as.numeric(percN), color = "coral", linewidth = .41, linetype = "dashed") +  # Línea roja horizontal
       labs(x = "Número de grupo", 
-           y = "Tasa de fijación (%) / abundancia relativa",
+           y = "Tasa de fijación (%) / Tamaño de nicho (%)",
            color = "Número de grupos (nicheN)") +
       theme_minimal() +
-      # facet_wrap(~nicheN, scales = "free_x") +
-      # facet_grid(dilfactor ~ nichedist + nicheN, 
-      # facet_wrap(. ~ nichedist + nicheN + dilfactor,
       facet_wrap(
-                 . ~ dilfactor + nicheN,
-                 axis.labels = "margins",
-                 strip.position = "top",
-                 scales = "free_x",
-                 # ncol = 2,
-                 labeller = labeller(nicheN = function(x) "", dilfactor = label_value) # otros: label:both
-                 ) +
+        . ~ dilfactor + nicheN,
+        axis.labels = "margins",
+        strip.position = "top",
+        scales = "free_x",
+        labeller = labeller(nicheN = function(x) "", dilfactor = label_value)
+      ) +
       theme(strip.text.x = element_text(angle = 0, vjust = -10, hjust = 1)) +
       coord_cartesian(ylim = c(0, 100)) +
-      # theme(legend.position = "bottom") +
+      scale_y_continuous(
+        sec.axis = sec_axis(~., name = "Tamaño de nicho (%)")
+      ) +
       theme(
         legend.position = "none",
-        panel.grid.major = element_line(color = "lightgray", size = 0.25),  # Major grid lines
-        panel.grid.minor = element_line(color = "gray90", size = 0.1)    # Minor grid lines
+        panel.grid.major = element_line(color = "lightgray", size = 0.25),
+        panel.grid.minor = element_line(color = "gray90", size = 0.1)
       ) +
-      # scale_color_brewer(palette = "Paired", direction = -1) # https://www.datanovia.com/en/wp-content/uploads/dn-tutorials/ggplot2/figures/029-r-color-palettes-rcolorbrewer-palettes-1.png
-      # scale_color_manual(values = c("#A6CEE3", "#B2DF8A", "#1F78B4", "#33A02C", "#FB9A99", "#FDBF6F", "#E31A1C", "#FF7F00"))
       scale_color_manual(values = c("#FB9A99", "#B2DF8A", "#E31A1C", "#33A02C")) +
       scale_fill_manual(values = c("#FB9A99", "#B2DF8A", "#E31A1C", "#33A02C")) +
       scale_x_continuous(breaks = function(x) seq(0, max(x), by = 1))  # Solo números naturales hasta nicheN

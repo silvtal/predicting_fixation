@@ -152,7 +152,7 @@ for (INTER_FOLDER in INTER_FOLDERS) {
           color = as.factor(`Valor interacciones`)
         ),
         inherit.aes = FALSE,
-        # direction = "y",         # Solo se repelen verticalmente
+        # direction = "y",       # Solo se repelen verticalmente
         nudge_x = 0.5,           # Aleja etiquetas hacia la derecha
         nudge_y = 0.7,           # Añade espacio vertical (opcional)
         min.segment.length = 0,  # Permite segmentos cortos
@@ -165,7 +165,7 @@ for (INTER_FOLDER in INTER_FOLDERS) {
       ) +
       labs(
         x = "Número de grupo",
-        y = "Tasa de éxito (%)",
+        y = "Tasa de extinción (%)",
         color = "Valor de la interacción"
       ) +
       theme_minimal() +

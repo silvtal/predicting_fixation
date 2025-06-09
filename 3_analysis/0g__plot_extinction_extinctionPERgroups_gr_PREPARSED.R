@@ -84,7 +84,7 @@ for (nichedistvalue in c("EvenGroups", "SkewedGroups")){
     p <- ggplot(df_summary_filtered, aes(x = group_number, y = mean_success, color = nicheN, fill = nicheN)) +
       geom_point(size = 1) +
       labs(x = "Número de grupo",
-           y = "Tasa de extinción (%)",
+           y = "Tasa de extinción (%) / Tamaño de nicho (%)",
            color = "Número de grupos (nicheN)") +
       theme_minimal() +
       # facet_wrap(~nicheN, scales = "free_x") +

@@ -13,11 +13,18 @@ import decimal
 import os
 from matplotlib.patches import Patch # legend labels
 import colorsys # version B
+import random # randomizar la paleta de colores
 
 output_folder = "/home/silvia/repos/predicting_fixation/figures/0__target_variable_space/"
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 
+# color
+color_palette = plt.cm.get_cmap('tab20')
+color_palette = [color_palette(i) for i in range(color_palette.N)]
+random.shuffle(color_palette)
+color_palette = colors.ListedColormap(color_palette)
+    
 for perc in [0.50, 0.90]:
     
     # read data ===============================================================
@@ -58,8 +65,7 @@ for perc in [0.50, 0.90]:
     csv['combined'] = csv.apply(lambda row: '_'.join([str(row['distrib']), str(row['size']), str(row['richness'])]), axis=1)
 
     unique_strings = np.unique(csv["combined"])
-    color_palette = plt.cm.get_cmap('tab20')
-    
+
     # fill AND border for each point
     color_mapping_bright = {}
     color_mapping_dark = {}
