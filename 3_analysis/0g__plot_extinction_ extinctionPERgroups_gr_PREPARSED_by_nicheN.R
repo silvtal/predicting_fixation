@@ -67,6 +67,7 @@ for (nichedistvalue in c("EvenGroups", "SkewedGroups")){
         geom_point(size = 1) +
         labs(x = "Número de grupo",
              y = "Tasa de extinción (%)",
+             y.sec = "Tamaño de nicho",
              color = "Número de grupos (nicheN)") +
         theme_minimal() +
         # facet_wrap(~nicheN, scales = "free_x") +

@@ -190,9 +190,9 @@ for (nichedistvalue in c("EvenGroups", "SkewedGroups")){
       ) +
       theme(strip.text.x = element_text(angle = 0, vjust = -10, hjust = 1)) +
       coord_cartesian(ylim = c(0, 100)) +
-      scale_y_continuous(
-        sec.axis = sec_axis(~., name = "Tamaño de nicho (%)")
-      ) +
+      # scale_y_continuous(
+      #   sec.axis = sec_axis(~., name = "Tamaño de nicho (%)")
+      # ) +
       theme(
         legend.position = "none",
         panel.grid.major = element_line(color = "lightgray", size = 0.25),

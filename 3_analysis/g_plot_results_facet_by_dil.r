@@ -387,6 +387,12 @@ var_traduccion <- c(
   comm_number = "Comunidad"
 )
 
+# traducir también esto
+all_information <- all_information %>%
+  mutate(group_distribution = recode(group_distribution,
+                                     "Even" = "homogénea",
+                                     "Skewed" = "heterogénea"))
+
 # ==============================================================================
 # Generar los gráficos
 for (ctype in unique(all_information$community_type)) {
@@ -424,13 +430,13 @@ for (ctype in unique(all_information$community_type)) {
     theme_minimal() +
     ylim(0, 1) +
     theme(
-      legend.position = "bottom",
+      legend.position = "none",
       legend.title = element_text(size = 14),
       legend.text = element_text(size = 14),
-      axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = 11),
+      axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1, size = 12),
       axis.text.y = element_text(size = 14),
-      axis.title.x = element_text(size = 22),
-      axis.title.y = element_text(size = 22),
+      axis.title.x = element_text(size = 19),
+      axis.title.y = element_text(size = 19),
       plot.title = element_text(size = 22, face = "bold"),
       plot.subtitle = element_text(size = 18),
       strip.text = element_text(size = 15) # para los títulos de los subplots (facets)
