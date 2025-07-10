@@ -1,0 +1,161 @@
+# Comparamos la tasa de extinción por grupo con y sin interacciones de varios tipos.
+# 'PREPARSED' : datos mejor separados y tal
+
+library(tidyverse)
+library(flexplot)
+#> run from script's directory !!
+
+# FIXED OPTIONS ----------------------------------------------------------------
+#> only 50% fixation threshold (% abundance for an OTU to be fixated)
+threshold <- '0.50'
+# threshold <- '0.30'
+#> 95% of iterations needed (% iterations that need to be successful in order to consider the community successful)
+percN <- '0.95'
+# percN <- '0.90'
+# no of dil-transf cycles (for the y axis limits)
+n_cycles <- 200
+
+# OTHER OPTIONS ----------------------------------------------------------------
+threshold <- as.numeric(threshold); percN <- as.character(percN) #> numeric
+prefix <- paste0(threshold*100, "_")
+IS_THE_ORDER_CORRECT_inter <- FALSE # set to FALSE if : 1, 10, 2, 3... in shannons, group_success and group_extinctions
+
+# FILE OPTIONS ----------------------------------------------------------------
+#> different output folder ("_paper")
+out_folder = "."
+# ---
+# no interactions
+NO_INTER_FILE <- paste0("group_PREPARSED_analysis_table_p", percN, "_f", threshold, ".csv")
+INTER_FOLDERS <- c("SkewedGroups_N10_100sp", "EvenGroups_N3_100sp")
+                 
+
+# READ FILES -------------------------------------------------------------------
+csv_groups <- read_csv(NO_INTER_FILE)
+
+# with interactions
+csv_interactions <- tibble()
+for (INTER_FOLDER in INTER_FOLDERS) {
+  folder <- paste0("../../2024-10-15_deriva_3/results_01_", INTER_FOLDER, "/stats/")
+  for (f in list.files(folder, full.names = F)) {
+    read_f <- read_csv(paste0(folder, f)) %>% 
+      mutate(nicheN = str_split_i(INTER_FOLDER, "_", 2) %>% str_split_i(., "N", 2),
+             nichedist = str_split_i(INTER_FOLDER, "_", 1),
+             richness = str_split_i(INTER_FOLDER, "_", 3) %>% str_split_i(., "sp", 1))
+    read_f$group_numbers <- paste(1:unique(read_f$nicheN), collapse = ";") # IMPORTANTE para la posterior identificación # TODO es diferente para csv_groups pero no da problemas
+    csv_interactions <- csv_interactions %>% bind_rows(read_f)
+  }
+}
+
+# PARSE : no inter -------------------------------------------------------------
+df_long <- csv_groups %>%
+  mutate(group_success = strsplit(group_success, ";")) %>%  # Separar los valores
+  unnest(group_success) %>%  # Expandir filas
+  mutate(group_success = 100 * as.numeric(group_success)) %>%  # Convertir a numérico
+  group_by(sample, nicheN, dilfactor, nichedist, richness) %>%  # Mantener todas estas variables para luego
+  mutate(group_number = row_number()) %>%  # Asignar el número de grupo
+  ungroup()
+
+df_summary <- df_long %>% # Calcular la media de los valores acumulativos para cada número de grupos
+  group_by(nicheN, group_number, dilfactor, nichedist, richness) %>%  # dilfactor, richness y nichedist se conservan para el plot luego
+  summarise(mean_success = mean(group_success), .groups = "drop") %>%
+  mutate(above_percN = mean_success > (100 * as.numeric(percN)),  # TRUE si está por encima, FALSE si no
+         inter_type = NA) #> to separate this dataset from the interactions data
+
+# PARSE : inter ----------------------------------------------------------------
+df_long_i <- csv_interactions %>%
+  mutate(group_number = strsplit(group_numbers, ";")) %>%  # Separar los valores
+  unnest(group_number) %>%  # Expandir filas
+  mutate(group_number = as.numeric(group_number)) %>% 
+  mutate(group_success_rate = map2_chr(group_success_rate, group_number, ~ str_split_i(.x, ";", .y))) %>% # Seleccionar el índice correspondiente
+  mutate(group_success_rate = 100 * as.numeric(group_success_rate)) %>%  # Convertir a numérico
+  mutate(inter_type = paste(Interaction_presence, Interaction_value, Interaction_sign, Mutual_interactions, sep = "_")) %>% 
+  ungroup()
+
+df_summary_i <- df_long_i %>% # Calcular la media de los valores acumulativos para cada número de grupos
+  group_by(nicheN, group_number, dilfactor, nichedist, richness,
+           inter_type, # importante
+           Interaction_presence, Interaction_value, Interaction_sign, Mutual_interactions, # interaction specifics...
+           ) %>%  # se conservan para el plot luego
+  summarise(mean_success = mean(group_success_rate), .groups = "drop") %>%
+  mutate(above_percN = mean_success > (100 * as.numeric(percN)))  # TRUE si está por encima, FALSE si no
+
+if (!IS_THE_ORDER_CORRECT_inter) {
+  df_summary_i <- df_summary_i %>%
+    mutate(group_number = ifelse(nicheN == 10 & group_number == 9, 2,
+                                 ifelse(nicheN == 10 & group_number == 2, 9, group_number)))
+  IS_THE_ORDER_CORRECT_inter <- TRUE
+}
+
+# PLOT - fixation --------------------------------------------------------------
+# Cada plot recoge una combinación de valores de 4 variables
+for (INTER_FOLDER in INTER_FOLDERS) {
+  {
+    nicheNvalue = str_split_i(INTER_FOLDER, "_", 2) %>% str_split_i(., "N", 2)
+    nichedistvalue = str_split_i(INTER_FOLDER, "_", 1)
+    richnessvalue = str_split_i(INTER_FOLDER, "_", 3) %>% str_split_i(., "sp", 1)
+    
+    if (nicheNvalue == 3) {
+      case_scale <- RColorBrewer::brewer.pal(9, "Reds")[(9 - length(unique(df_summary_i$Interaction_value))):9]
+    } else {
+      case_scale <- RColorBrewer::brewer.pal(9, "Greens")[(9 - length(unique(df_summary_i$Interaction_value))):9]
+    }
+  }
+  
+  for (dilfactorvalue in c(0.1)) {
+    # no inter
+    df_summary_filtered <- df_summary[((df_summary$nichedist == nichedistvalue) &
+                                         (df_summary$dilfactor == dilfactorvalue) &
+                                         (df_summary$nicheN == nicheNvalue) &
+                                         (df_summary$richness == richnessvalue)), ] %>%
+      mutate(nicheN = as.factor(nicheN))
+    
+    # inter
+    df_summary_filtered_i <- df_summary_i[((df_summary_i$nichedist == nichedistvalue) &
+                                             (df_summary_i$dilfactor == dilfactorvalue) &
+                                             (df_summary_i$nicheN == nicheNvalue) &
+                                             (df_summary_i$richness == richnessvalue)), ] %>%
+      mutate(nicheN = as.factor(nicheN)) %>%
+      mutate(group_number = as.numeric(group_number)) %>%
+      # Renombrar columnas para el ploteo
+      rename(
+        "Interaction presence" = "Interaction_presence",
+        "Interaction sign" = "Interaction_sign",
+        "Interaction value" = "Interaction_value"
+      )
+    
+    p <- ggplot(df_summary_filtered_i, aes(x = group_number, y = mean_success, color = as.factor(`Interaction value`), group = `Interaction value`)) +  # next
+      geom_line(linewidth = .3) +
+      geom_point(size = 1) +
+      labs(
+           x = "Group number",
+           y = "Success rate (%)",
+           color = "Interaction value") +
+      theme_minimal() +
+      facet_grid(
+        rows = vars(`Interaction presence`),
+        cols = vars(`Interaction sign`),
+        axis.labels = "all",
+        labeller = label_both
+      ) +
+      coord_cartesian(ylim = c(0, 100)) +
+      theme(
+        legend.position = "bottom",
+        panel.grid.major = element_line(color = "lightgray", size = 0.25),
+        panel.grid.minor = element_line(color = "gray90", size = 0.1),
+        plot.title = element_text(hjust = 0.5, size = 12)
+      ) +
+      scale_color_manual(values = case_scale) +
+      scale_x_continuous(breaks = function(x) seq(0, max(x), by = 1)) +
+      geom_point(data = df_summary_filtered, aes(x = group_number, y = mean_success), size = 1, inherit.aes = F) +
+      geom_line(data = df_summary_filtered, aes(x = group_number, y = mean_success), size = .5, inherit.aes = F)
+    
+    fig_prefix <- ifelse(nicheNvalue == 3, "Fig10", "Fig11")
+    ggsave(
+      filename = paste0(out_folder, "/", fig_prefix, "_0g_success_per_group_", INTER_FOLDER, "_", dilfactorvalue, ".png"),
+      plot = p,
+      height = 1.2 * 2000, width = 2 * 1100,
+      units = "px"
+    )
+  }
+}
+
