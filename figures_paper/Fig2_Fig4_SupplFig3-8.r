@@ -396,13 +396,13 @@ var_traduccion <- c(
 # Mapping from community_type to figure names
 ctype_to_fig <- c(
   "10_Even_1000" = "Fig2",
-  "10_Even_100" = "Fig3",
+  "10_Even_100" = "SupplFig5",
   "10_Skewed_1000" = "SupplFig3",
   "10_Skewed_100" = "SupplFig4",
-  "3_Even_1000" = "SupplFig5",
-  "3_Even_100" = "SupplFig6",
-  "3_Skewed_1000" = "Fig4",
-  "3_Skewed_100" = "Fig5"
+  "3_Even_1000" = "SupplFig7",
+  "3_Even_100" = "SupplFig8",
+  "3_Skewed_1000" = "Fig3",
+  "3_Skewed_100" = "SupplFig6"
 )
 
 # ==============================================================================

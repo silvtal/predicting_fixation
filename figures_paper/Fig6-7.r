@@ -149,7 +149,7 @@ for (INTER_FOLDER in INTER_FOLDERS) {
       geom_point(data = df_summary_filtered, aes(x = group_number, y = mean_success), size = 1, inherit.aes = F) +
       geom_line(data = df_summary_filtered, aes(x = group_number, y = mean_success), size = .5, inherit.aes = F)
     
-    fig_prefix <- ifelse(nicheNvalue == 3, "Fig8", "Fig9")
+    fig_prefix <- ifelse(nicheNvalue == 3, "Fig6", "Fig7")
     ggsave(
       filename = paste0(out_folder, "/", fig_prefix, "_0g_success_per_group_", INTER_FOLDER, "_", dilfactorvalue, ".png"),
       plot = p,

@@ -10,6 +10,7 @@
 /3_analysis/plots_R
 /3_analysis/regression_model.R
 /3_analysis/.Rhistory
+/3_analysis/*.ipynb
 /3_analysis/.ipynb_checkpoints
 /3_analysis/RandomForest_variable_exploration.R
 /3_analysis/GLM short failures.ipynb
@@ -26,5 +27,4 @@
 /3_analysis/g_plot_results_facet_by_dil_PARTS.r
 /3_analysis/debug
 /3_analysis/"0g__plot_extinction_ extinctionPERgroups_gr_PREPARSED_by_nicheN.R"
-/figures_paper/.Fig1.kra
-/figures_paper/.Fig6-7_SupplFig7-8__ONLY_FIXATION.R
+/figures_paper/.*

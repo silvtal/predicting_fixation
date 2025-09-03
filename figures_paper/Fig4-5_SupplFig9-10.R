@@ -146,10 +146,10 @@ for (nichedistvalue in c("EvenGroups", "SkewedGroups")){
       scale_x_continuous(breaks = function(x) seq(0, max(x), by = 1))  # Only natural numbers up to nicheN
 
     # Update output filenames to new numbering
-    fig_prefix <- ifelse(nichedistvalue == "EvenGroups" && richnessvalue == 1000, "Fig6",
-                   ifelse(nichedistvalue == "EvenGroups" && richnessvalue == 100, "Fig7",
-                   ifelse(nichedistvalue == "SkewedGroups" && richnessvalue == 1000, "SupplFig7",
-                   ifelse(nichedistvalue == "SkewedGroups" && richnessvalue == 100, "SupplFig8", ""))))
+    fig_prefix <- ifelse(nichedistvalue == "EvenGroups" && richnessvalue == 100, "Fig6",
+                   ifelse(nichedistvalue == "EvenGroups" && richnessvalue == 1000, "SupplFig7",
+                   ifelse(nichedistvalue == "SkewedGroups" && richnessvalue == 100, "Fig7",
+                   ifelse(nichedistvalue == "SkewedGroups" && richnessvalue == 1000, "SupplFig8", ""))))
     ggsave(
       filename = paste0(out_folder, "/", fig_prefix, "_0g_extinction_and_fixation_per_group_", nichedistvalue, "_", richnessvalue, ".png"),
       plot = p,
