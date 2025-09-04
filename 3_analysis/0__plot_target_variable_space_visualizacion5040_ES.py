@@ -33,7 +33,7 @@ for perc in [0.50, 0.90]:
     prefix = str(decimal.Decimal(perc*100)) + "%_"
     
     csv = csv.dropna() # remove samples that have not even reached fixation in 1000 transfers
-    csv = csv.reset_index(drop=True) #> para que no pete después
+    csv = csv.reset_index(drop=True) #> avoid errors downstream
 
     # substitute 1.00E+06 with 1000000
     csv = csv.replace(to_replace="1.00E+06", value=100000)

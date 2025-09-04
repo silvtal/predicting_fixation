@@ -1,12 +1,13 @@
-# ESTE SCRIPT ES PARA LOS 'PARSED', LOS GENERADOS A PARTIR DE 'generate_data(...)'
-# HAY OTRO QUE ESTE DESDE LOS 'PREPARSED', datos mejor separados y tal
+# THIS SCRIPT IS FOR THE 'PARSED' DATA, GENERATED FROM 'generate_data(...)'
+# THERE'S ANOTHER ONE FROM 'PREPARSED' DATA, which is better separated
 
-# Notas
-# - El success más bajo posible para single-group y para multiple-group data es
-#   2. Porque suma un ciclo por la cara. O sea que resto 1 a todos los valores.
-#   Esto se hace en la parte de análisis, no al cargar los datos.
+# Notes
+# - The lowest possible success for single-group and multiple-group data is
+#   2. Because it starts from 0, not from 1. So I subtract 1 from all values.
+#   This is done in the analysis part, not when loading the data.
 # - The multiple-group simulations all fail with a dilution factor of 0.25, so
 #   we only have data for 8 different values instead of 9.
+
 
 library(tidyverse)
 library(flexplot)

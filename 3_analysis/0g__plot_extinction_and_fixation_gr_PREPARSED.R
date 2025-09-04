@@ -102,23 +102,23 @@ if (plot_bars) {
 for (nichedistvalue in c("EvenGroups", "SkewedGroups")){
   for (richnessvalue in c(100, 1000)){
     df_summary_filtered_extinction <- df_summary_extinction[((df_summary_extinction$nichedist == nichedistvalue) &
-                                        (df_summary_extinction$richness == richnessvalue)), ] %>%
+                                                               (df_summary_extinction$richness == richnessvalue)), ] %>%
       mutate(nicheN = as.factor(nicheN))
     
     df_summary_filtered_fixation <- df_summary_fixation[((df_summary_fixation$nichedist == nichedistvalue) &
-                                        (df_summary_fixation$richness == richnessvalue)), ] %>%
+                                                           (df_summary_fixation$richness == richnessvalue)), ] %>%
       mutate(nicheN = as.factor(nicheN))
     
     p <- ggplot() +
       # Plot fixation data in light gray
       geom_point(data = df_summary_filtered_fixation,
-                aes(x = group_number, y = mean_success),
-                color = "gray80", size = 1) +
-       # Plot extinction data in color
+                 aes(x = group_number, y = mean_success),
+                 color = "gray80", size = 1) +
+      # Plot extinction data in color
       geom_point(data = df_summary_filtered_extinction, 
-                aes(x = group_number, y = mean_success, color = nicheN, fill = nicheN),
-                size = 1, shape = 1) +
-
+                 aes(x = group_number, y = mean_success, color = nicheN, fill = nicheN),
+                 size = 1, shape = 1) +
+      
       labs(x = "Número de grupo",
            y = "Tasa de extinción o fijación (%) / Tamaño de nicho (%)",
            color = "Número de grupos (nicheN)") +
@@ -148,7 +148,7 @@ for (nichedistvalue in c("EvenGroups", "SkewedGroups")){
                  stat = "identity", position = "stack", alpha = 0.2,
                  color = NA)
     }
-
+    
     ggsave(
       filename = paste0(out_folder,"/0g_extinction_and_fixation_per_group_", nichedistvalue, "_", richnessvalue, ".png"),
       plot = p,

@@ -154,5 +154,3 @@ for c in csv["sample"].unique():
 plt.savefig(output_folder + "/0__dilfactor_effect.png", format = "png")
 plt.show()
 plt.close()
-
-

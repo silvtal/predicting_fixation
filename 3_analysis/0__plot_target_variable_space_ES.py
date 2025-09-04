@@ -222,7 +222,7 @@ for perc in [0.50, 0.90]:
     
 
 
-    ## Save the legend as its own file (nvm, too many)
+    ## Save the legend as its own file
     ## ===============================
     # from matplotlib.patches import Patch # plotting the legend
     # fig_legend = plt.figure(figsize=(4, 18))

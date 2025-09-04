@@ -1,3 +1,7 @@
+# this script PLOTS and also PARSES the simulations, performing diversity calculations
+# the resulting tables include data on group sizes and group success
+# it also records the list of TRANSFERS containing the last non-NA ( <- fixation without extinction, unless we allow extinction!)
+# ---
 # este script PLOTEA y también PARSEA las simulaciones, haciendo cálculos de diversidad
 # las tablas resultantes incluyen datos sobre los tamaños de grupo y el éxito de grupo
 # también registra la lista de TRANSFERS que contienen el último not NA ( <- fijación sin extinción, a menos que permitamos la extinción!)

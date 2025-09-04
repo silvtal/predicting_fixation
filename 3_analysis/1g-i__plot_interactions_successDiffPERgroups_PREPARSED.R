@@ -1,5 +1,5 @@
 # Comparamos la tasa de extinción por grupo con y sin interacciones de varios tipos.
-# 'PREPARSED' : datos mejor separados y tal
+# 'PREPARSED' : better separated data
 
 library(tidyverse)
 library(flexplot)

@@ -1,7 +1,8 @@
-# HAY OTRO SCRIPT PARA LOS 'PARSED', LOS GENERADOS A PARTIR DE 'generate_data(...)'
-
-# 'PREPARSED' : datos mejor separados y tal
+# 'PREPARSED' : datos mejor separados // better separated data
 # generated with ~/repos/predicting_fixation/3_analysis/g_plot_results_facet_by_dil.r
+
+# THERE'S ANOTHER SCRIPT FOR 'PARSED', DATA GENERATED FROM 'generate_data(...)'
+
 # No hace falta tener incluido en el df el número de ciclo en el que se ha dado
 # el éxito, así que se pueden usar tablas donde no se sepa.
 
@@ -39,7 +40,7 @@ csv_groups <- read_csv(paste0("group_PREPARSED_analysis_table_p", percN, "_f", t
 # PLOT - fixation --------------------------------------------------------------
 #> EvenGroups; GROUP fixation (functional group no. vs. dilfactor effect)---
 # we're going to plot the frequency of every nicheN-Percentage of Groups with Success combination.
-# (!) "group_extinctions" es en csv_groups (comprobar aún así) un string con ";" separando ! 
+# (!) "group_extinctions" es un string con ";" como separador
 # porcentaje de los grupos que sí tienen éxito
 
 if (plot_bars) {

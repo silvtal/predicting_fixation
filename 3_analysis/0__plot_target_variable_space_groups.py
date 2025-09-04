@@ -37,21 +37,6 @@ csv.distrib = [1 if i=="uniform" else 0 for i in csv.distrib]
 for fd in np.sort(np.unique(csv.dilfactor)):
     successes = list(csv.success[csv.dilfactor==fd])
     print(fd, "-- total communities:", str(len(successes)), " -- mean:", str(round(np.mean(successes), 3)))
-        # 0.00025 -- total communities: 125  -- mean: 49.432
-        # 0.0004 -- total communities: 334  -- mean: 56.973
-        # 0.0005 -- total communities: 330  -- mean: 90.194
-        # 0.001 -- total communities: 329  -- mean: 175.152
-        # 0.0025 -- total communities: 229  -- mean: 77.131
-        # 0.004 -- total communities: 201  -- mean: 90.02
-        # 0.005 -- total communities: 201  -- mean: 110.433
-        # 0.008 -- total communities: 195  -- mean: 176.021
-        # 0.01 -- total communities: 195  -- mean: 222.015
-        # 0.025 -- total communities: 96  -- mean: 145.417
-        # 0.04 -- total communities: 88  -- mean: 196.705
-        # 0.05 -- total communities: 89  -- mean: 231.472
-        # 0.1 -- total communities: 66  -- mean: 420.364
-        # 0.25 -- total communities: 8  -- mean: 719.625
-        
         
 # make plots ==============================================================
 for n, i in enumerate(['distrib',
@@ -218,7 +203,7 @@ for r in range(num_rows):
     
 
 
-    ## Save the legend as its own file (nvm, too many)
+    ## Save the legend as its own file
     ## ===============================
     # from matplotlib.patches import Patch # plotting the legend
     # fig_legend = plt.figure(figsize=(4, 18))
