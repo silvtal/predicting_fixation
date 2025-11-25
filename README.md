@@ -23,8 +23,33 @@ Our communities don't come from 16S sequencing, but have instead been **artifici
 
 In these datasets, each row corresponds to a microbial community that has been subjected to a dilution-growth experiment with a given dilution factor. The columns contain diversity metrics and other characteristics of our simcomms. There's also an additional column containing our target variable. The target variable is "successful fixation" - the number of dilution-growth cycles each community is expected to take until it reaches a state of successul fixation as defined above.
 
-This target variable has been obtained from neutral simulations of growth-dilution experiments. The wrappers we used for running these simulations are in the `simulation_wrappers` folder and use our [`dilgrowth` R package](https://github.com/silvtal/dilgrowth/). The results from these simulations (which output many folders containing multiple abundance data tables) were parsed into the final available .csv files with custom scripts available at the [`2_generate_training_data`](https://github.com/silvtal/predicting_fixation/tree/main/2_generate_training_data) folder of this repository.
+This target variable has been obtained from neutral simulations of growth-dilution experiments. The wrappers we used for running these simulations are in the `2_simulations/00_simulation_wrappers/` folder and use our [`dilgrowth` R package](https://github.com/silvtal/dilgrowth/). The results from these simulations (which output many folders containing multiple abundance data tables) were parsed into the final available .csv files with custom scripts available at the `2_simulations/02_process_results/` folder of this repository.
 
+#### Simulation workflow structure
+
+The `2_simulations/` directory is organized as follows:
+
+- **`00_simulation_wrappers/`**: Contains wrappers and launch scripts:
+  - **`wrapper_*.sh`**: Main simulation wrappers for each scenario:
+    - `wrapper_scenario1.sh`: Scenario 1 (no functional groups)
+    - `wrapper_scenario2.sh`: Scenario 2 (with functional groups)
+    - `wrapper_scenario3.sh`: Scenario 3 (with functional groups and interactions)
+    - `wrapper_rhizosphere.sh`: Real data from tomato rhizosphere
+  - **`launch_*`**: Launch scripts that process simulation results:
+    - `launch_create_data_simcomms`: Processes scenario 1 results
+    - `launch_create_data_simcomms_groups`: Processes scenario 2 results
+    - `launch_reorganizar_comunidades.sh`: Reorganizes community data
+
+- **`01_scripts/`**: Contains the main simulation scripts:
+  - `dilgrowth_1_2.R`: Used by scenarios 1 and 2
+  - `simuls_3.R`: Used by scenario 3 (with interactions)
+
+- **`02_process_results/`**: Contains scripts for processing simulation results:
+  - `create_data_simcomms.R`: Main script for parsing simulation outputs
+  - `simul_fixation_functions.R`: Helper functions for fixation analysis
+  - `reorganizar_comunidades.py`: Python script for reorganizing community data
+
+The workflow is: **Generate initial communities** (`1_datasets/`) → **Run simulations** (wrappers call scripts in `01_scripts/`) → **Process results** (launch scripts call scripts in `02_process_results/`)
 
 
 ### Analysis

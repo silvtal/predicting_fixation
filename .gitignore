@@ -5,12 +5,13 @@
 /1_datasets/simulation_results/preparsed
 /1_datasets/simulation_results/preparsed/1g.RData
 /1_datasets/simulation_results/2024_parser.sh
-/2_generate_training_data/test
-/2_generate_training_data/create_data_rhizosphere.R
-/2_generate_training_data/create_data.R
-/2_generate_training_data/read_simul_data.R
-/2_generate_training_data/.Rhistory
-/2_generate_training_data/create_data_simcomms_Gini.R
+/2_simulations/test
+/2_simulations/.Rhistory
+/2_simulations/00_simulation_wrappers/wrapper_rhizosphere.sh
+/2_simulations/02_process_results/create_data_rhizosphere.R
+/2_simulations/02_process_results/create_data.R
+/2_simulations/02_process_results/read_simul_data.R
+/2_simulations/02_process_results/create_data_simcomms_Gini.R
 /3_analysis/plots_R
 /3_analysis/regression_model.R
 /3_analysis/.Rhistory
@@ -33,4 +34,6 @@
 /figures/dilfactor_effect.png
 /figures/0__INTERACTIONS
 /figures_groups/preparsed_0.5
-/figures_paper/.*
+/figures_paper/\.*
+*.md
+!README.md

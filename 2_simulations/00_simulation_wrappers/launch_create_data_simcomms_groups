@@ -1,0 +1,67 @@
+#!/bin/bash
+
+## will run for inputs:
+########################################
+##### dilution factors:  9 values  #####
+##### only up to 200 cycles        #####
+#########################################################################
+##### Initial communities: SIMULATED with generate_simcomms.R       #####
+##### (60 total)           size:    10⁶                             #####
+#####                      species: 100, 1000                      #####
+#####                      abundance distrib: log-normal            #####
+#####                            ((30 communities, reps 1-30))      #####
+#########################################################################
+
+
+## Simuls folder format::
+## simul_folder => ../results_null_model/simcomms_2023-02-16/
+## filenames    =>  SIMCOMM_SIMS_"$g_$nichedist"_"${fdil}"_"${distrib}"_sp_"${sp}"_"${sa}"
+##                 "SIMCOMM_SIMS_0.8_uniform_10000_sp_10_9/simul_9_t_86.csv"
+##                                 3       4     5     7 8           1
+
+perc=0.95 # percentage of simulations with fixation needed for success
+fixT=0.9 # relative abundance needed for a species to be considered fixated 
+n=30     # number of unique samples for each community type
+input_folder=../../results_null_model/simcomms_WITH_GROUPS_2023-11-27
+output_folder=../../results_null_model/parsed_results_GROUPS_$perc
+cores=1
+
+for fdil in 0.00025 0.0005 0.001 0.0025 0.005 0.01 0.025 0.05 0.1
+do
+    for size in 10000 # 10e+06
+    do
+      for sp in 100 1000
+      do
+        for distrib in lognorm
+        do
+          groupslist="3 10"
+          for g in $groupslist
+          do
+            echo $g
+	    for nichedist in SkewedGroups EvenGroups
+            do
+            ## Choose group distribution
+            # if [ $distrib = "uniform" ]
+            # then
+            #   pcgtable=../data/PCGtable/EvenGroups_N"$g"_"$sp"sp.csv
+            # else
+            #   pcgtable=../data/PCGtable/SkewedGroups_N"$g"_"$sp"sp.csv
+            # fi
+            pcgtable=../1_datasets/PCGtables/"$nichedist"_N"$g"_"$sp"sp.csv
+######## WIP
+######## simul wrapper output is
+######## SIMCOMM_SIMS_'$nicheN$nichedist'_'$fdil'_'$distrib'_sp_'$sp'_'$sa'
+######## make it similar but legible w read_simul_data()
+######## WIP
+            ## PCGtable is chosen; run script
+            echo "launching script for ../results_null_model/SIMCOMM_SIMS_"$g"_"$nichedist"_"$fdil"_"$distrib"_"$size"_sp_"$sp"(...)"
+            echo -e \#\!/bin/bash > temp
+            echo "~/R-4.0.5/bin/Rscript ../02_process_results/create_data_simcomms.R --input "$input_folder"/SIMCOMM_SIMS_"$g"_"$nichedist"_"$fdil"_"$distrib"_"$size"_sp_"$sp"_ --output_folder "$output_folder" -n "$n" -p "$pcgtable" -f "$fixT" -s "$perc" -c "$cores >> temp
+            sbatch -A microbioma_serv -p biobis temp
+            rm temp
+        done
+      done
+    done
+  done
+done
+done
