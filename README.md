@@ -9,15 +9,9 @@ Models are trained with dilution-growth experiment data. Once trained, these mod
 
 Specifically, our objective is using these models to **identify useful parameters** for prediction of fixation. Being able to predict how many cycles we need for a given starting community will help us design dilution-growth experiments.
 
+The pipeline consists of three main steps: (1) generation of initial communities, (2) simulation of dilution-growth cycles, and (3) analysis of fixation events.
 
-### Dataset availability
-
-The parsed datasets we have used are available [here](https://github.com/silvtal/predicting_fixation/tree/main/1_datasets/simulation_results).
-
-There are two tables - one defines "success" (successful fixation) at a 50% threshold and the other defines it at a 90% threshold.
-
-
-### Dataset generation
+### (1) Dataset generation
 
 Our communities don't come from 16S sequencing, but have instead been **artificially generated with [this script](https://github.com/silvtal/predicting_fixation/blob/main/1_datasets/generate_simcomms.R)**. There's also a set of [artificially generated](https://github.com/silvtal/predicting_fixation/blob/main/1_datasets/generate_PCGtable.py) "PCG tables" that assign functional groups to the species in these simcomms.
 
@@ -25,7 +19,13 @@ In these datasets, each row corresponds to a microbial community that has been s
 
 This target variable has been obtained from neutral simulations of growth-dilution experiments. The wrappers we used for running these simulations are in the `2_simulations/00_simulation_wrappers/` folder and use our [`dilgrowth` R package](https://github.com/silvtal/dilgrowth/). The results from these simulations (which output many folders containing multiple abundance data tables) were parsed into the final available .csv files with custom scripts available at the `2_simulations/02_process_results/` folder of this repository.
 
-#### Simulation workflow structure
+#### Dataset availability
+
+The parsed datasets we have used are available [here](https://github.com/silvtal/predicting_fixation/tree/main/1_datasets/simulation_results).
+
+There are two tables - one defines "success" (successful fixation) at a 50% threshold and the other defines it at a 90% threshold.
+
+### (2) Simulation workflow structure
 
 The `2_simulations/` directory is organized as follows:
 
@@ -52,14 +52,12 @@ The `2_simulations/` directory is organized as follows:
 The workflow is: **Generate initial communities** (`1_datasets/`) → **Run simulations** (wrappers call scripts in `01_scripts/`) → **Process results** (launch scripts call scripts in `02_process_results/`)
 
 
-### Analysis
+### (3) Analysis
 
-Analysis scripts for one-group communities can be found in the [`3_analysis`](https://github.com/silvtal/predicting_fixation/tree/main/3_analysis) folder of this repository.
+All analysis scripts can be found in [`3_analysis`](https://github.com/silvtal/predicting_fixation/tree/main/3_analysis):
 
-- `0__` scripts allow for preliminary visualization of the variables and their relationship with OTU fixation.
+- `S1_`: single-community simulations (scenario 1, no separate functional groups). Examples include `S1_0__plot_target_variable_space.py`, `S1_1__RF_success.R`, and `S1_2__GLM_failure.R`, which cover exploratory plots, random forest importance, and GLM failure probability, respectively.
+- `S2_`: simulations with multiple functional groups (scenario 2). Representative scripts are the `S2_g_plot_results_facet_by_dil*.r` helpers that parse + plot preliminary results.
+- `S3_`: simulations with multiple groups and including interactions (scenario 3). These are the `S3_1g-i__*` scripts focusing on exploring the effect of interactions on fixation, extinction and success.
 
-- `1__RF_success.R` goes a step further in order to quantify the effects of our variables. It defines the target variable, "success", as the dilution-growth cycle number in which one OTU is fixated, meaning it has reached a relative abundance of 50% or 90% from the total community size. Then it creates a series of random forest models to quantify the importance of each variable.
-
-- In `2__GLM_failure.R` we define the target variable, "failure", as a boolean value which indicates whether fixation has failed (1, fixation did not occur) in a community before the Nth cycle or not (0). Since it's a binary variable, we can use a GLM which returns linear coefficients for each variable. We make multiple models for multiple N values ranging from 10 to 1000.
-
-All figures are saved to the `figures` folder.
+Each script writes its outputs to the corresponding `figures*/` subfolder (`figures/`, `figures_groups/`, `figures_groups_INTERACTIONS/`), matching the scenario prefix.

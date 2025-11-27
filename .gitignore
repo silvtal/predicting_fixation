@@ -13,19 +13,19 @@
 /2_simulations/02_process_results/read_simul_data.R
 /2_simulations/02_process_results/create_data_simcomms_Gini.R
 /3_analysis/plots_R
-/3_analysis/regression_model.R
+/3_analysis/S1_regression_model.R
 /3_analysis/.Rhistory
 /3_analysis/*.ipynb
 /3_analysis/.ipynb_checkpoints
-/3_analysis/RandomForest_variable_exploration.R
+/3_analysis/S1_RandomForest_variable_exploration.R
 /3_analysis/GLM short failures.ipynb
 /3_analysis/GLM short.ipynb
 /3_analysis/GLM original.ipynb
 /3_analysis/RF original.ipynb
-/3_analysis/regression_model.R
-/3_analysis/g_plot_results_facet_by_dil_PARTS.r
+/3_analysis/S1_regression_model.R
+/3_analysis/S2_g_plot_results_facet_by_dil_PARTS.r
 /3_analysis/debug
-/3_analysis/"0g__plot_extinction_ extinctionPERgroups_gr_PREPARSED_by_nicheN.R"
+/3_analysis/"S2_0g__plot_extinction_ extinctionPERgroups_gr_PREPARSED_by_nicheN.R"
 /figures/1__RF_success/RF_success.RData
 /figures/2__GLM_failure/GLM_failure.RData
 /figures/2__GLM_failure/*.mp4
@@ -35,5 +35,4 @@
 /figures/0__INTERACTIONS
 /figures_groups/preparsed_0.5
 /figures_paper/\.*
-*.md
-!README.md
+supplementary-materials.md
