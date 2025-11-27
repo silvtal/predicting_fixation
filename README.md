@@ -11,6 +11,7 @@ Specifically, our objective is using these models to **identify useful parameter
 
 The pipeline consists of three main steps: (1) generation of initial communities, (2) simulation of dilution-growth cycles, and (3) analysis of fixation events.
 
+![Dilution-growth pipeline overview](process_fig.svg)
 ### (1) Dataset generation
 
 Our communities don't come from 16S sequencing, but have instead been **artificially generated with [this script](https://github.com/silvtal/predicting_fixation/blob/main/1_datasets/generate_simcomms.R)**. There's also a set of [artificially generated](https://github.com/silvtal/predicting_fixation/blob/main/1_datasets/generate_PCGtable.py) "PCG tables" that assign functional groups to the species in these simcomms.
