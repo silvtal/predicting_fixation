@@ -2,6 +2,8 @@
 
 Data and _scripts_ in this repository were used to elaborate original article "Computational simulation of ecological drift for generating minimal microbiomes identifies key experimental and biotic factors influencing success" ([preprint](https://doi.org/10.1101/2025.07.10.664178)).
 
+**For detailed technical documentation, see the [Supplementary Materials](supplementary-materials.md).**
+
 ### Summary
 This pipeline generates models that are capable of predicting fixation of OTUs in a given community type or types from its **compositional data**. We establish successful fixation is reached when **only one OTU is present** in **each phylogenetic core group** (PCG) in **50%** or **90%** of the instances of that community.
 
