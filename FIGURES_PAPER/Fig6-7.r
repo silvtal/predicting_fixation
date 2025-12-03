@@ -25,7 +25,7 @@ IS_THE_ORDER_CORRECT_inter <- FALSE # set to FALSE if : 1, 10, 2, 3... in shanno
 out_folder = "."
 # ---
 # no interactions
-NO_INTER_FILE <- paste0("group_PREPARSED_analysis_table_p", percN, "_f", threshold, ".csv")
+NO_INTER_FILE <- paste0("../3_analysis/group_PREPARSED_analysis_table_p", percN, "_f", threshold, ".csv")
 INTER_FOLDERS <- c("SkewedGroups_N10_100sp", "EvenGroups_N3_100sp")
                  
 
@@ -35,7 +35,7 @@ csv_groups <- read_csv(NO_INTER_FILE)
 # with interactions
 csv_interactions <- tibble()
 for (INTER_FOLDER in INTER_FOLDERS) {
-  folder <- paste0("../../2024-10-15_deriva_3/results_01_", INTER_FOLDER, "/stats/")
+  folder <- paste0("../1_datasets/simulation_results/interactions_results/results_01_", INTER_FOLDER, "/stats/")
   for (f in list.files(folder, full.names = F)) {
     read_f <- read_csv(paste0(folder, f)) %>% 
       mutate(nicheN = str_split_i(INTER_FOLDER, "_", 2) %>% str_split_i(., "N", 2),
